@@ -1,0 +1,12 @@
+
+
+
+//----------------非等值连接-----------//
+
+#案例：查询员工的工资和工资级别,只显示‘A’级别
+select salary,grade_level from employees e,job_grades g 
+where salary between lowest_sal and highest_sal and g.grade_level='A';
+
+
+//-------------------------------------//
+

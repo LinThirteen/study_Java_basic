@@ -1,0 +1,55 @@
+
+
+
+list 单键多值
+	它的底层实际是个双向链表，对两端的操作性能很高，通过索引下标的操作中间的节点性能较差
+
+
+
+
+---------------基本命令
+#从左右边插入一个或多个值
+	lpush/rpush  <key> value1 value2
+
+
+#从左边/右边吐出一个值（值在键在，值亡键亡）
+	lpop/rpop <key>
+	
+
+#从key1列表右边吐出一个值，插到key2列表左边
+	rpoplpush  key1  key2
+	
+
+#按照索引小标获取元素（从左到右）
+	lrange key start stop
+	#从头到尾
+	lrange key 0 -1
+	
+	
+	
+#按照索引下标获取元素（从左到右）
+	lindex key value
+	#获取最后一个元素
+	lindex test1 -1
+
+
+#获取列表长度
+	llen key
+
+
+#在value的后面|前面 插入 newvalue 
+ linsert key after|before value newvalue
+
+
+#从左边删除n个value
+	lrem key n value
+	lrem test1 2 value   代表：从左往右删2个
+	lrem test1 -2 value   代表：从右往左删2个
+	lrem test1 0 value   代表：删除所有
+
+
+
+
+
+
+

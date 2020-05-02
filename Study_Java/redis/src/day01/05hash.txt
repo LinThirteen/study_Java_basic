@@ -1,0 +1,86 @@
+
+hash数据类型
+
+
+------------------基本语法-----------------
+#给key集合中的field键赋值value
+	hset key field value
+	hset userInfo user:1010:uid 1010 (其中user:1010:uid为键)
+
+
+#从key1集合field 取出value
+	hget key field
+
+
+
+#批量设置hash的值
+	hmset key1 field1 value1 field2 value2 ......
+
+
+
+
+#查看哈希表key中，给定域field是否存在
+	hexists key fiels
+	
+
+
+#列出该hash集合的所有field
+	hkeys key
+
+
+
+
+#列出该hash集合的所有value
+	hvals key
+
+
+#列出hash的键值对
+	hgetall userInfo
+
+
+
+#为哈希表key中的域field的值加上增量increment
+	hincrby key field increment
+	#给age对应的value增加10
+	hincrby userInfo age 10
+	
+	
+#将哈希表中的域field的值设置为value，当且仅当域field不存在
+	hsetnx key field value
+	#设置年龄值
+	hsetnx userInfo sex 男   (redis-cli --raw方式启动才能看到中文)
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

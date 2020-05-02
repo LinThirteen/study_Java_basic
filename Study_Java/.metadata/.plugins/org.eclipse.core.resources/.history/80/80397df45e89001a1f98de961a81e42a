@@ -1,0 +1,30 @@
+
+
+//排序,sort当中需要传递一个对象指定传递规则
+	db.emp.find({}).sort({sal:1}); （升序）
+	db.emp.find({}).sort({sal:-1}); （降序）
+
+	
+	db.emp.find({}).sort({sal:1,empno:-1}); 
+
+
+
+
+
+//在查询时，可以在第二个参数的位置来设置查询结果   投影
+	db.emp.find({},{ename:1});
+
+
+	db.emp.find({},{ename:1,_id:0});      不看_id
+
+
+
+	db.emp.find({},{ename:1,_id:0,sal:1});      不看_id
+
+
+
+
+
+
+
+

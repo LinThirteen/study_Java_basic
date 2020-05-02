@@ -1,0 +1,183 @@
+
+
+
+
+call proc_drop_index("尚硅谷2","t_dept");
+call proc_drop_index("尚硅谷2","t_emp");
+
+
+
+1.记住不要驱动虚拟表
+2.分组查询中select后面只能跟group后面的字段或者函数
+3.select后面不要跟 * 
+4.mysql会自己把有所以的表作为被驱动表，所以用inner join时要注意
+5.用 straight_join可以指定被驱动表
+6.group by 后面的字段建立索引，除了id
+7.关联字段建立索引
+8.如果不建造索引的话，那么就是所有行数相乘的结果
+9.order by deptld,age表示先根据deptld排序然后在根据age排序
+
+
+
+
+//--------------------------------习题-----------------------------//
+				#l.列出自己的掌门比自己年龄小的人员
+				
+#垃圾查询
+ select ab.* from (select a.*,b.CEO from t_emp a LEFT JOIN t_dept b on a.deptld=b.id) ab 
+ LEFT JOIN t_emp c on ab.CEO=c.id where ab.age > c.age;
+ 
+ 
+ #优化：（小表驱动大表无效，没有办法避免where后面的条件对索引的全表扫描)
+select a.name,a.age,c.name ceoname,c.age from t_emp a left join t_dept b
+ on a.deptld = b.id left join t_emp c on b.ceo=c.id where c.age<a.age;
+ 
+ 
+ 
+ --------------------------------------------------------------------------
+ 
+ 
+ 
+ 			#2列出所有年龄低于自己门派平均年龄的人员
+ 			
+ 
+ select d.* from (select deptld,AVG(age) a from t_emp c GROUP BY deptld) ab
+ LEFT JOIN t_emp d on ab.deptld=d.deptld  where d.age<ab.a;
+ 
+
+ #垃圾查询
+ select c.name,c.age,aa.avgage from t_emp c inner join
+(select a.deptld,avg(a.age) avgage from t_emp a where a.deptld is not null 
+group by a.deptld) aa on c.deptld = aa.deptld where c.age < aa.avgage
+
+
+#优化
+1.建立索引
+create index idx_deptld on t_emp(deptld);
+create index idx_deptld_age on t_emp(deptld,age);
+
+
+
+
+--------------------------------------------------------------------------------------
+
+
+
+				#3列出至少有2个年龄大于40岁的成员的门派
+				
+#垃圾查询(出现子查询)				
+SELECT d.* from (SELECT count(*) c,deptld from  t_emp WHERE age>40 GROUP BY deptld) ab
+LEFT JOIN t_dept d on d.id=ab.deptld where ab.c>=2;
+
+
+#优化
+create index idx_deptName on dept(deptName);
+create index idx_deptld_age on emp(deptld,age)
+select b.deptName,b.id,count(*) from t_dept b straight_join t_emp a on a.deptld=b.id
+where a.age>40 group by b.deptName,b.id having count(*) >=2;
+
+
+
+
+-------------------------------------------------------------------------------------------
+
+
+					#4.至少有2位非掌门人成员的门派
+#垃圾查询
+SELECT * from (SELECT count(*) c,deptld from  t_emp  GROUP BY deptld) ab
+LEFT JOIN t_dept d on d.id=ab.deptld where ab.c>2;
+
+
+出现了is not null和子查询
+select *from t_emp a where a.id not in(select b.ceo from t_dept b where b.ceo is not null);
+
+
+
+优化：没有子查询和is not null
+select c.deptName,c.id ,count(*) from t_emp a inner join t_dept c on a.deptld = c.id
+left join t_dept b on a.id=b.ceo
+where b.id is null group by c.deptName,c.id having count(*)>=2;
+
+
+#进一步优化（建立索引+straight_join）
+create index idx_deptName on dept(deptName);
+create index idx_deptld on emp(deptld);
+create index idx_ceo on emp(ceo);
+select c.deptName,c.id ,count(*) from t_dept c straight_join t_emp a on a.deptld = c.id
+left join t_dept b on a.id=b.ceo
+where b.id is null group by c.deptName,c.id having count(*)>=2;
+
+
+-------------------------------------------------------------------------------------------
+
+
+
+#5.列出全部人员，并增加一列备注是否为掌门，如果是掌门显示是，不是掌门显示不是；
+
+select a.name,a.age ,(case when b.id is null then '否' else '是' end) '是否为掌门'
+from t_emp a left join t_dept b on a.id=b.ceo
+
+
+
+-------------------------------------------------------------------------------------------
+
+#6.列出全部门派，并增加一列备注“老鸟or菜鸟",若门派的平均值年龄>50显示“老鸟”，否则显示"菜鸟";
+
+#写法一
+select b.deptName,b.id,avg(a.age) ,(case when avg(a.age)>50 l then '老鸟' else '菜鸟' end) '老鸟or菜鸟'  
+from t_emp a right join t_dept b on a.deptld=b.id 
+group by b.deptName,b.id having avg(a.age)>0;
+
+
+#写法二：
+select b.deptName,b.id,avg(a.age) ,if(avg(a.age)>50,'老鸟','菜鸟') '老鸟or菜鸟'  
+from t_emp a right join t_dept b on a.deptld=b.id 
+group by b.deptName,b.id having avg(a.age)>0;
+
+
+
+-------------------------------------------------------------------------------------------
+
+				#7.显示每个门派年龄最大的人
+select a.name,a.age,ab.maxage from t_emp a join 
+(select id,MAX(age) maxage from t_emp c where c.deptld is not null  GROUP BY deptld) ab 
+on a.id=ab.id
+
+
+
+-------------------------------------------------------------------------------------------
+
+
+					#8.显示每个门派年龄第二大的人
+
+#错误查询					
+select a.* from t_emp a LEFT JOIN (select deptld,MAX(age) m from t_emp GROUP BY deptld) ab 
+on ab.deptld=a.deptld where a.age<ab.m GROUP BY a.deptld HAVING MAX(a.age)
+
+
+#
+set @rank=0;
+set @last_deptld=0;
+set @last_age=0;
+select a.deptld,a.name,a.age
+	from(
+		select t.*, if(@last_deptld=deptld,
+		if(@last_age = age,@rank,@rank :=@rank+1),@rank:=1) as rk,
+		@last_deptld := deptld as last_deptld,
+		@last_age :=age as last_age
+		from t_emp t
+		order by deptld,age desc
+	
+	)a where a.rk=2;
+
+
+
+说明：
+	f(@last_deptld=deptld,@rank :=@rank+1,@rank:=1)表示如果@last_deptld=deptld成立就执行@rank :=@rank+1
+	否则执行：@rank:=1
+
+
+
+
+
+

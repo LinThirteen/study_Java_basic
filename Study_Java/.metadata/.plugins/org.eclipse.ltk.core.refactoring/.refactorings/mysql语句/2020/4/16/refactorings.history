@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;mysql语句/mysql高级/day12&apos; to &apos;day12索引进阶&apos;" description="Rename resource &apos;day12&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="mysql高级/day12" name="day12索引进阶" stamp="1586871089606" updateReferences="true"/>
+</session>

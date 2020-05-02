@@ -1,0 +1,96 @@
+#分组查询
+
+语法：
+	select 分组函数，列(要求出现在group by的后面)
+	 from 表
+	 where 筛选条件
+	 group by 分组的列表   注意：group by使用原则： select  后面只能放 函数 和 gruop by后面的字段
+	 
+	 order by 子句
+	 
+注意:
+	查询列表必须特殊，要求是分组函数和group by后出现的字段
+
+
+特点：
+	1.分组查询中的筛选条件分为两类
+						数据源                               位置						关键字
+	  	分组前筛选，       原始表				group by 前面  				where
+	  	分组后筛选          分组后的结果集		group by 后面				having
+	2.分组函数做条件肯定放在having子句的后面
+	3.能用分组前筛序的，就优先考虑使用分组前筛选
+	4.group by 子句支持单个字段分组也支持多个字段分组（多个字段之间用逗号分开，没有顺序要求）
+	5.也可以添加排序（排序放在整个分组查询的最后）
+	
+	
+//-----------------------group by-------------//	
+
+#案例一：查询每个工种的最高工资（将工种分组，在找到最高工资）
+select max(salary),job_id from employees gorup by job_id;
+
+#案例二：查询每个位置上的部门个数
+select count(*),location_id from departments group by location_id;
+
+
+#案例三：（添加筛选条件）查询邮箱中包含a字符的，每个部门的平均工资
+select  email,department_id,avg(salary) from employees where email like '%a%' group by department_id; 
+
+
+#案例三：（添加筛选条件）查询有奖金的每个领导手下员工的最高工资
+select  manager_id,max(salary)  from employees where commission_pct is not null group by manager_id;
+
+//-----------------------------------------------//
+
+
+
+
+
+
+//-------------------注意 gruop by---------------------//
+
+错误：select name,dept, max(age) from mytbl2 group by dept;
+原因：(查出的数据不对)group by使用原则： select  后面只能放 函数 和 gruop by后面相关的字段,“name” 出错
+
+正确写法：
+	select * from mytbl2 m inner join(select dept,max(age) maxage from mytbl2 group by dept) ab 
+	on ab.dept=m.dept and m.age=ab.maxage
+
+
+//-----------------------------------------------//
+
+
+
+
+
+
+
+
+
+//---------------------添加复杂的筛选条件-------------//
+
+#案例：查询哪个部门的员工个数大于2 
+//错误：因为    “from employees where num>2 ”会去找employees表中是否有count(*)这个字段
+select  count(*) as num, department_id from employees where num>2  group by department_id;//
+//修改：
+select  count(*) as num, department_id from employees group by department_id having num>2;
+
+
+
+
+//分步解析
+#案例二：查询每个工种有奖金的员工的最高工资>12000的工种编号和最高工资；
+1.查询每个工种有奖金的员工的最高工资
+select max(salary),job_id from employees where commission_pct is not null group by job_id;
+
+2.根据1的结果继续筛选，最高工资>12000
+select max(salary),job_id from employees where commission_pct is not null group by job_id having max(salary)>12000;
+
+
+
+#案例三：查询领导编号>102的每个领导手下的最低工资>5000的领导编号是哪个，以及最低工资;
+1.查询领导编号>102的每个领导手下的最低工资
+select min(salary), manager_id from employees where manager_id>102  group by manager_id; 
+2.最低工资>5000的领导编号是哪个，以及最低工资;
+select min(salary), manager_id from employees where manager_id>102  group by manager_id having min(salary)>5000;
+
+//-------------------------------------------------//

@@ -1,0 +1,29 @@
+
+
+//排序,sort当中需要传递一个对象指定传递规则
+	db.emp.find({}).sort({sal:1}); （升序）
+	db.emp.find({}).sort({sal:-1}); （降序）
+
+	
+	db.emp.find({}).sort({sal:1,empno:-1}); 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

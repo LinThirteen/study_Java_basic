@@ -1,0 +1,31 @@
+
+
+
+
+
+解决mysql中文乱码问题：
+	
+	1.修改配置文件，  在[mysqld]  下面加上：character_set_server=utf8
+	2.重启mysql
+	3.修改数据库的字符集： alter database 库名 character set "utf8"
+	4.修改表的字符集 ：alter table 表名 convert to  character set "utf8"
+	
+	
+	
+	
+	
+远程访问数据库：
+	1.	查看用户信息 ： mysql->use mysql
+	2. mysql->select * from user\G;
+	3.查看用户host,user,authentication_string信息
+			select host,user,authentication_string from user;
+	
+	4.设置权限用户：创建名称为zhang3的用户，密码设为：123456
+					create user  zhang3 identified by '123456';
+	
+	5授予权限(给root用户授予所有权限);
+		grant all privileges on "." to root@'%' identified by "Wk199806"
+	
+		
+	
+	

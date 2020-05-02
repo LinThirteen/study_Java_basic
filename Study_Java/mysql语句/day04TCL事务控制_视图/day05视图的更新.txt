@@ -1,0 +1,179 @@
+
+
+含义：虚拟表，和普通表一样使用
+mysql5.1版本出现的新特性，是通过表动态生成的数据
+
+比如：舞蹈班和普通班级的对比
+	创建语法的关键字	是否实际占用物理空间	使用
+
+视图	create view		只是保存了sql逻辑	增删改查，只是一般不能增删改
+
+表	create table		保存了数据		增删改查
+
+
+*/
+
+//--------------------视图的更新------------------------//
+
+#案例：数据过于复杂不能修改
+create or replace view myv1;
+as
+select last_name,email,salary*12*(1+ifnull(commission_pct,0)) "annual salary"
+from employees;
+
+#1.插入(不能更新,因为数据过于复杂)
+insert into myv1 values("张飞",'zf@qq.com',100000);
+
+
+
+#案例：可以修改视图(同时也会修改employees表的数据)
+create or replace view myv1
+as 
+select last_name,email 
+from employees
+
+select * from myv1;
+
+#1.插入
+insert into myv1 values('张飞','zf@qq.com')
+
+#2.修改
+update myv1 set last_name = '张无忌' where last_name='张飞';
+
+#3.删除
+delete from myv1 where last_name = "张无忌";7
+
+
+
+----------------------------------------------------------------------
+
+#具备以下特点的视图不允许更新
+#①包含以下关键字的sql语句：分组函数、distinct、group  by、having、union或者union all
+#②join
+#③常量视图
+#④where后的子查询用到了from中的表
+#⑤用到了不可更新的视图
+
+
+CREATE OR REPLACE VIEW myv1
+AS
+SELECT MAX(salary) m,department_id
+FROM employees
+GROUP BY department_id;
+
+SELECT * FROM myv1;
+
+#更新（失败）
+UPDATE myv1 SET m=9000 WHERE department_id=10;
+
+
+------------------------------------------------------------------------
+
+#常量视图(不能更新)
+create or replace view myv2
+as
+select 'join' name;
+
+select * from myv2
+
+#更新失败
+update myv2 set name = 'lucy'
+
+
+#select 中包含子查询
+create or replace view myv3
+as
+select (select max(salary) from employees) 最高工资;
+
+#更新(更新失败)
+SELECT * FROM myv3;
+UPDATE myv3 SET 最高工资=100000;
+
+
+
+#④join
+CREATE OR REPLACE VIEW myv4
+AS
+
+SELECT last_name,department_name
+FROM employees e
+JOIN departments d
+ON e.department_id  = d.department_id;
+
+#更新
+
+SELECT * FROM myv4;
+UPDATE myv4 SET last_name  = '张飞' WHERE last_name='Whalen';
+INSERT INTO myv4 VALUES('陈真','xxxx');
+
+
+
+#⑤from一个不能更新的视图
+CREATE OR REPLACE VIEW myv5
+AS
+
+SELECT * FROM myv3;
+
+#更新
+
+SELECT * FROM myv5;
+
+UPDATE myv5 SET 最高工资=10000 WHERE department_id=60;
+
+
+
+#⑥where子句的子查询引用了from子句中的表
+
+CREATE OR REPLACE VIEW myv6
+AS
+
+SELECT last_name,email,salary
+FROM employees
+WHERE employee_id IN(
+	SELECT  manager_id
+	FROM employees
+	WHERE manager_id IS NOT NULL
+);
+
+#更新
+SELECT * FROM myv6;
+UPDATE myv6 SET salary=10000 WHERE last_name = 'k_ing';
+//----------------------------------------------------//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

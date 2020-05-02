@@ -1,0 +1,99 @@
+
+
+文档之间的关系：
+	一对一
+	一对多
+	多对多
+
+
+
+
+
+一对一：
+	db.wifeAndHusband.insert([
+	{
+		name:"黄蓉",
+		husband:{
+			name:"郭靖"
+			}
+		},
+		{
+		name:"潘金莲",
+		husband:{
+			name:"武大"
+			}
+		}
+
+	]);
+
+
+
+
+
+
+一对多
+	
+db.users.insert([
+	{
+		name:"黄蓉",
+	},
+		{
+		name:"潘金莲",
+	}
+
+	]);
+
+
+db.order.insert({
+		list:["苹果","香蕉","梨子"],
+		user_id:ObjectId("hklsdhlfdshjfdkhkfdkhk")
+		});
+
+
+
+db.order.insert({
+		list:["果汁","牛奶","红豆"],
+		user_id:ObjectId("hklsdhlfdshjfdkhkfdkhk")
+		});
+
+
+
+查找用户swk的订单
+	var user_id = db.users.findOne({username:"swk"})._id;
+	db.order.find({user_id:user_id});
+
+
+
+
+
+
+
+
+多对多(老师和学生):
+	
+	db.teacher.insert([
+		{name:"洪七公"},
+		{name:"黄药师"},
+		{name:"龟仙人"},
+		]);
+
+
+db.stus.insert([
+	
+	{
+		name:"郭靖",
+		teach_ids:[
+				ObjectId("hdshfkldsfhdsaklhf"),
+				ObjectId("hdshfkldsfhdsaklhdsfdsf")，
+
+
+
+
+
+
+
+
+
+
+
+

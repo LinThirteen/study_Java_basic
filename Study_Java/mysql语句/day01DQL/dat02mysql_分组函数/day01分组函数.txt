@@ -1,0 +1,138 @@
+#分组函数
+
+//-----------------------分组函数---------------//
+功能：用作于统计，又称聚合函数，又称统计函数
+
+分类：
+1.sum,avg,max,min,count.
+	其中：sum,avg一般用于数值型
+		  MAX,MIN可以处理任何类型
+		  count计算非空值的个数
+2.分组函数都忽略NULL值
+3.可以和distinct搭配实现去重的运算
+4.count函数的单独介绍
+	一般用count(*)统计行数
+6.和分组函数一同查询的字段要求是group by后的字段
+	
+	
+	
+
+
+#1.简单使用
+#2.sum求工资之和
+select sum(salary) from employees;
+
+
+#3.avg
+select avg(salary) from employees;
+
+
+#4.max
+select max(salary) from employees;
+
+
+#4.min
+select min(salary) from employees;
+
+
+#4.count有多少个有工资的值
+select count(salary) from employees;
+
+
+select sum(salary) as 和,avg(salary) as 平均,max(salary) as 最大,min(salary) as 最小 from employees;
+	
+						//保留两位
+select sum(salary) as 和,round(avg(salary),2) as 平均,max(salary) as 最大,min(salary) as 最小 from employees;
+
+
+//-----------------------------------------------//
+
+
+
+
+
+
+//-----------------------参数类型---------------//
+
+
+select max(last_name),min(last_name) from employees;//根据名字长度排序
+
+select max(hiredate),min(hiredate) from employees;//根据日期排序
+
+select count(last_name) from employees;//非空的名字
+
+
+//-----------------------------------------------//
+
+
+
+
+
+//-----------------------是否忽略null---------------//
+
+#sum和avg和max和min忽略null值,如果不忽略null，那么sum(commission_pct)=null
+select sum(commission_pct),avg(commission_pct) from employees;
+
+
+//-----------------------------------------------//
+
+
+
+
+
+//----------------------和distinct搭配---------------//
+
+#去重之后在求值
+select sum(distinct salary) from employees;
+
+
+#计算有几种工资
+select count(distinct salary) from employees;
+
+//-----------------------------------------------//
+
+
+
+
+
+
+//------------count函数的详细介绍---------------//
+#查看多少个员工有工资的
+select count(salary) from employees;
+
+
+#统计表的总行数
+select count(*) from employees;
+select count(1) from employees;
+
+效率：
+5.5版本之前用：MYISAM 存储引擎下  count(*)性能高
+5.5版本之后用：INNODB 存储引擎下  count(1)和count(*)差不多
+
+//-----------------------------------------------//
+
+
+
+
+//------------和分组函数一同查询的字段有限制--------//
+#不报错，但没有意义
+select avg(salary),employee_id from employees;
+
+
+//-----------------------------------------------//
+
+
+
+
+//------------习题-----------------------------//
+
+#查询员工表中最大入职时间和最小入职时间的相差的天数（DIFFRENCE)
+select datediff('2017-10-1','2017-9-29');
+select datediff(now(),'1998-6-15');
+select datediff(max(hiredate),min(hiredate)) as DIFFRENCE from employees;
+
+
+
+
+
+//-----------------------------------------------//

@@ -1,0 +1,180 @@
+
+
+
+
+//----------------------单表-----------------------//
+
+#案例：查询category_id 为 1 且 comments 大于 1 的情况下，views最多的author_id
+explain SELECT id, author_id from article where category_id = 1 and comments >1 order by views desc limit 1;
+
+type:all       rows:3          extra:using where,using filesort
+
+	
+--------------------------------------------------	
+
+尝试优化一：(建立索引+删除索引)(按照查询顺序建立索引)
+	#alter table article add index idx_article_ccv(category_id,comments,views);
+	create index idx_article_ccv on article(category_id,comments,views);
+
+
+explain SELECT id, author_id from article where category_id = 1 and comments >1 order by views desc limit 1;
+
+type:range	       rows:1         extra:using where,using filesort     
+(解释：存在using filesort的原因是comments > 1,使得范围值变成range，但是同时也让comments以后的索引失效;)
+
+---------------------------------------------------
+
+尝试优化二：
+	删除之前建立的索引：	
+			drop index idx_article_ccv on article;
+	重新建立索引：(不给comments建立索引)
+			create index idx_article_cv on article(category_id,views);
+			
+explain SELECT id, author_id from article where category_id = 1 and comments >1 order by views desc limit 1;
+
+type:ref	       rows:2         extra:using where			
+
+//--------------------------------------------------//
+
+
+
+
+
+
+//----------------------两表优化案例-----------------------//
+
+#案例查询语句(左连接)(左连接建立在右表)
+explain select * from class left join book on class.card = book.card;
+
+class:   type:all	       rows:16        extra:	
+book:	 type:all	       rows:16         extra:	
+
+
+
+(内连接)(使用连接缓存)
+explain select * from class inner join book on class.card = book.card;
+class:   type:all	       rows:16        extra:	
+book:	 type:all	       rows:16         extra:Using where; Using join buffer
+
+
+
+--------------------------------------------------	
+
+尝试优化一:给book表中的card添加索引
+	alter table book add index b(card);
+	
+explain select * from class left join book on class.card = book.card;
+	
+class:   type:all	       rows:16        extra:	
+book:	 type:ref	       rows:1          extra:Using index
+
+
+--------------------------------------------------	
+
+尝试优化二:
+	drop index b on book;
+	
+给class表中的card添加索引
+	alter table class add index c(card);
+
+class:   type:index	       rows:16          extra:Using index
+book:	 type:all	       rows:16          extra:
+
+原因：这是有左连接特效决定，left join 条件用于确定如何从右表搜索行，左边一定都有
+所以右边是我们的关键点，一定要建立索引
+
+
+
+
+//-----------------------------------------------------//
+
+
+
+
+
+
+
+
+
+
+//---------------------三表优化案例--------------------//
+
+#案例查询语句(左连接)
+explain select * from class left join book on class.card = book.card left join phone on book.card=phone.card;
+
+class:   type:all	       rows:16        extra:	
+book:	 type:all	       rows:16        extra:
+phone:   type:all		   rows:28	      extra:	
+
+
+
+
+#(内连接)(使用连接缓存)
+explain select * from class left join book on class.card = book.card left join phone on book.card=phone.card;
+  
+class:   type:all	       rows:16        extra:	
+book:	 type:all	       rows:16        extra:Using where; Using join buffer
+phone:   type:all		   rows:28	      extra:Using where; Using join buffer
+
+
+--------------------------------------------------	
+
+
+尝试优化一:给phone表中的card添加索引
+	alter table phone add index p(card);
+	
+explain select * from class left join book on class.card = book.card left join phone on book.card=phone.card;
+	
+class:   type:all	       rows:16         extra:	
+book:	 type:all	       rows:16         extra:
+phone:	 type:ref	       rows:1          extra:Using index
+
+
+
+-----------------------------------------------------
+
+尝试优化二:增加book表中card索引
+	alter table book add index b(card);
+
+explain select * from class left join book on class.card = book.card left join phone on book.card=phone.card;
+
+class:   type:all	       rows:16         extra:	
+book:	 type:ref	       rows:1          extra:Using index
+phone:	 type:ref	       rows:1          extra:Using index
+
+
+解释：后2行的type都是ref且总rows优化很好，效果不错，因此索引最好建立在经常需要查询的字段中。
+
+
+
+//-----------------------------------------------------//
+
+
+
+
+
+
+//----------------------------结论--------------------//
+
+join语句优化
+	①尽可能减少join语句中的NestedLoop的循环总次数：“永远用小的结果集驱动大的结果集”
+	②优先优化NestedLoop的内层循环
+	③保证join语句中被驱动表上join条件字段已经被安排索引
+	④当无法保证被驱动表的join条件字段被索引且内存充足的前提下，不要太吝啬joinbuffer的设置
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

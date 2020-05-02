@@ -1,0 +1,89 @@
+
+
+zset是redis中最复杂的数据类型
+
+
+
+
+-----------------基本语法------------------
+#将一个或多个memeber元素以及其score值加入到有序集key当中
+	zadd key score1 value score2 value
+	(相同元素不同分数会将分数更新，相同分数不同元素可以添加进去并且会根据元素排序)
+
+#返回有序集key中，下标砸start stop 之间的元素，带withscores，可以让分数一起和值返回得到结果集
+	zrange key start stop withscores
+	
+	
+
+#返回有序集key中，所有score值介于min和max之间的成员。有序集成员按score值递增次序排序
+	zrangebyscore key min max withscores [limit offset count]
+	zrangebyscore testzSet 0 200（查询分数在1-200之间的元素）
+	zrangebyscore testzSet 100 100（查询分数在100单个元素）
+	
+
+#同上，改成大到小排序
+	zrevrangebyscore key max min withscores [limit offset count]
+
+
+
+#为元素的score加上增量
+	zincrby key increment value
+	
+
+
+#删除该集合下，指定值的元素
+	zrem key value
+	
+
+	
+#统计该集合，分数区间内的元素个数
+	zcount key min max
+	
+
+#返回该值在集合中的排名，从0开始
+	zrank key value
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

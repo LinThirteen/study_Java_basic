@@ -1,0 +1,26 @@
+#分组查询
+
+	
+//-----------------------按函数分组-----------------//	
+
+#按表达式或者函数分组
+#案例：按员工姓名的长度分组，查询每一组的员工个数，筛选员工个数>5的有哪些
+select  count(*),length(last_name) as num  from employees group by num having count(*)>5;
+
+
+#按多个字段进行分组
+案例：查询每个部门工种的员工的平均工资
+select  avg(salary), department_id,job_id from employees group by department_id,job_id ;
+
+
+#增加排序
+案例：查询每个部门每个工种的员工的平均工资，并且按平均工资的高低显示出来；
+select  avg(salary), department_id,job_id from employees group by department_id,job_id order by avg(salary) ;
+
+//-------------------------------------------------//
+
+
+#习题
+查询员工最高工资和最低工资的差距（diffrence)
+select max(salary)-min(salary) diffrence from employees;
+select TIMEDIFF(max(salary),min(salary)) as distance  from employees

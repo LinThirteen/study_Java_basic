@@ -1,0 +1,173 @@
+
+
+#通用写法
+drop database if exists 旧库名
+create database 新库名
+
+drop table if exists 旧表名
+create table 表名();
+
+
+
+//---------------------------表的管理-------------------//
+
+#查看表中有哪些列
+desc departments;
+
+
+
+#表的创建(其中长度和约束都为可选的)
+create table 表名(
+
+	字段名   类型(长度)  约束,
+	字段名   类型(长度)  约束,
+	字段名   类型(长度)  约束,
+	字段名   类型(长度)  约束,
+	字段名   类型(长度)  约束
+
+)
+
+
+#案例：创建books表
+create table books(
+
+	id int,
+	bName varchar(20),
+	price double,
+	authorId int,
+	publishDate  datetime  #出版日期
+);
+
+
+
+#创建作者表
+create table author(
+	id int,
+	au_name varchar(20),
+	nation varchar(10)
+
+)
+
+
+//------------------------------------------------------//
+
+
+
+
+
+
+
+
+
+//---------------------------表的修改-------------------//
+
+1.修改列名
+2.修改列的类型或约束
+3.添加新列
+4.删除列
+5.修改表名
+
+
+
+#1.修改列名
+alter table books change column(可省略)  publishdate(旧列名)  pubdate(新列名)  datetime(类型)
+
+
+
+#2.修改列的类型或约束
+alter table books modify column pubdate timestamp; #(时间戳)
+alter table books modify column name varchar(50);
+
+
+#3.添加新列
+alter table author add  column  annual(列名)  double;
+
+#添加列到某一列的后面
+alter table 表名 add column 列名 类型 【first|after 字段名】
+
+
+
+#4.删除列
+alter table books drop column annual;
+
+
+
+#5.修改表名
+alter table author rename to book_author;
+
+
+
+#6.表的删除
+drop table if exists book_author
+
+
+
+
+
+//------------------------------------------------------//
+
+
+
+
+
+
+
+//---------------------------表的复制-------------------//
+
+INSERT INTO author VALUES
+(1,'村上春树','日本'),
+(2,'莫言','中国'),
+(3,'冯唐','中国'),
+(4,'金庸','中国');
+
+
+#1.仅仅复制表的结构(里面没有数据)
+create table copy(表名) like author
+
+
+
+#2.复制表的结构+数据
+CREATE TABLE copy2 
+SELECT * FROM author;
+
+
+
+#只复制部分数据
+CREATE TABLE copy3
+SELECT id,au_name
+FROM author 
+WHERE nation='中国';
+
+
+
+
+#仅仅复制某些字段
+CREATE TABLE copy4 
+SELECT id,au_name
+FROM author
+WHERE 0;
+
+
+
+
+#将departments中的数据插入新表dept2中(跨库插入数据)
+create table dept2 
+select department_id ,department_name
+from myemployees.departments;(其中myemployees是一个库)
+
+
+
+
+
+
+
+
+
+//------------------------------------------------------//
+
+
+
+
+
+
+

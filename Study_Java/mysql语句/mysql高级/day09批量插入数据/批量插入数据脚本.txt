@@ -1,0 +1,163 @@
+
+							DELIMITER(恢复分号结束符);
+
+数据表信息：
+
+create table dept(
+
+			id int UNSIGNED PRIMARY key auto_increment,
+			deptno MEDIUMINT UNSIGNED not null DEFAULT 0,   #外键
+			dname VARCHAR(20) not null DEFAULT "",
+			loc VARCHAR(13) not null DEFAULT ""
+		
+)ENGINE=INNODB DEFAULT CHARSET=GBK;
+
+
+
+
+create table emp(
+
+	id int UNSIGNED PRIMARY key auto_increment,
+	empno MEDIUMINT UNSIGNED not null DEFAULT 0,
+	ename varchar(20) not null default "",
+	job VARCHAR(9) not null DEFAULT "",
+	mgr MEDIUMINT UNSIGNED not null DEFAULT 0,
+	hiredate date not null,
+	sal DECIMAL(7,2) not null,
+	comm DECIMAL(7,2) not null,
+	deptno MEDIUMINT UNSIGNED not null DEFAULT 0
+	
+
+)ENGINE=INNODB DEFAULT CHARSET=GBK;
+
+
+
+
+--------------------------代码-----------------------
+
+ 	随机产生字符串
+ 	随机产生部门编号
+	
+
+	
+	
+	
+	
+---------------------------------创建函数--------------------------------------	
+delimiter $$
+	drop function if exists rand_string;
+	create function rand_string(n int) returns varchar(255)
+	begin
+		declare chars_str varchar(52) default 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		declare return_str varchar(255) default '';
+		declare i int default 0;
+		while i<n do
+		set return_str=concat(return_str,substring(chars_str,floor(1+rand()*52),1));
+		set i=i+1;
+		end while;
+		return return_str;
+	end $$
+
+
+
+delimiter $$		
+	create function rand_num() returns int(5)
+	begin
+		declare i int default 0;
+		set i = floor(100+rand()*10);
+	return i;
+				
+end $$
+
+
+
+	#再次使用$$才能通
+	mysql>select now() from dual;
+		->$$
+	
+	
+
+解释：
+	declare  声明  chars_str varchar(100)
+
+	declare  声明  return_str varchar(255) 
+
+	declare  声明  i int
+
+
+	substring(参数1，参数2，参数3)，其中三个参数分别表示：参数1表示需要截取的字符串，
+	参数2表示从字符串的那个位置开始截取（字符串下标从1开始），参数3表示要截取多少位，
+	如果不写，表示截取从参数2指定的位置开始剩下的全部字符。
+
+
+	rand() 取值范围是0 <= rand() <=1.0, floor()取当前数值得整数部分
+
+
+
+
+
+
+--------------------------------创建存储过程---------------------------
+
+创建往emp表中插入数据的存储过程
+
+
+#设定事务只提交一次     repeat为死循环
+
+
+--创建一个存储过程
+delimiter $$
+create procedure insert_emp(in start int(10), in max_num int(10))
+begin
+	 declare i int default 0;
+	 set autocommit = 0;
+	 repeat
+	  set i = i + 1;
+	  insert into emp(empno,ename,job,mgr,hiredate,sal,comm,deptno) values((start + i), rand_string(6), 'SALESMAN',0001,curdate(), 2000,400,rand_num());
+	  until i = max_num
+	 end repeat;
+ commit;
+end $$
+
+
+
+
+
+创建往dept表中插入数据的存储过程
+
+
+delimiter $$
+create procedure insert_dept(in start int(10), in max_num int(10))
+begin
+	 declare i int default 0;
+	 set autocommit = 0;
+	 repeat
+	  set i = i + 1;
+	  insert into dept(deptno,dname,loc) values((start + i), rand_string(10),rand_string(8));
+	  until i = max_num
+	 end repeat;
+ commit;
+end $$
+
+
+
+
+--------------------------------调用-----------------------
+
+delimiter;    #(恢复分号结束符)
+
+
+先插入dept,调用函数insert_dept(插入10个部门)
+call insert_dept(100,10);
+
+
+在插入emp，调用insert_emp
+call insert_emp(101,500);
+
+
+
+
+
+
+
+

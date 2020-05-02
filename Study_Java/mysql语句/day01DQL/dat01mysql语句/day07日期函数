@@ -1,0 +1,78 @@
+进阶四：
+
+//---------------日期函数--------------------//
+
+#now 返回当前系统日期+时间
+select now();
+
+
+#curdate 返回当前系统日期，不包含时间
+select curdate();
+
+
+#curtime返回当前时间，不包含日期
+select curtime();
+
+#datediff:返回两个日期相差的天数
+
+#monthname:以英文形式返回
+
+#可以获取指定的部分，年，月，日，小时等
+select year(now()) as 年;
+select year('1998-1-1') as 年;
+select year(hiredate) as 年 from employees;
+
+select month(now()) as 月;
+select monthname(now()) as 月;  //March
+
+
+#str_to_date 将字符通过指定格式转换为日期
+select str_to_date('1998-3-2','%Y-%c-%d') as out_put;//1998-03-02
+
+
+案例：查询入职日期为1992-4-3的员工信息
+select * from employees where hiredate = '1992-4-3';
+#转换
+select * from employees where hiredate = str_to_date('4-3 1992','%c-%d %Y');
+
+
+#date_fromat 将日期转换成字符
+select date_format(now(),'%y年%m月%d日') as out_put;
+
+案例：查询有奖金的员工名和入职日期(xx月/xx日 xx年)
+select last_name,date_format(hiredate,'%m月/%d日 %y年) 入职日期 from employees where commission_pct id not null;
+
+
+
+//-----------------------------------------------//
+
+
+
+
+				重点
+
+
+
+select * from employees where hiredate < '2000-9-9';
+
+
+select * from employees where hiredate = '1992-4-3';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

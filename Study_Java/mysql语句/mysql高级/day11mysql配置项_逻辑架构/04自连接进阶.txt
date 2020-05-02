@@ -1,0 +1,144 @@
+
+
+
+
+create table t_dept(
+	id int(11) not null auto_increment PRIMARY KEY,
+	deptName varchar(30) default null,
+	address varchar(40) default null
+	
+	
+)ENGINE=INNODB auto_increment=1 DEFAULT charset=utf8
+
+
+
+
+
+create table t_emp(
+
+	id int(11) not null auto_increment PRIMARY KEY,
+	name varchar(20) default null,
+	age int(3) default null,
+	deptld int(11) DEFAULT null,
+	empno int not null
+
+	
+)ENGINE=INNODB auto_increment=1 DEFAULT charset=utf8;
+
+
+
+
+求所有人物对应的掌门名称;
+
+#写法一：第四快
+select c.name,ab.name ceoname from t_emp c LEFT JOIN 
+(SELECT b.id,a.`name` from t_emp a LEFT JOIN t_dept b on b.CEO=a.id) ab 
+on c.deptld=ab.id;
+
+
+
+
+
+#写法二：第三快
+select c.name,ab.name ceoname from
+(SELECT a.`name`,b.CEO from t_emp a LEFT JOIN t_dept b on a.deptld=b.id) ab 
+LEFT JOIN t_emp c on ab.ceo=c.id;
+
+
+
+
+写法三: 第一快
+select  a.name,c.name ceoname from t_emp a
+left join t_dept b on a.deptld=b.id left join t_emp c on b.ceo=c.id;
+
+
+
+写法四: 第二快
+select a.name,(select c.name from emp c where c.id=b.ceo)ceoname from emp a
+LEFT JOIN dept b on a.deptld=b.id
+
+
+
+					
+						a			b			c
+写法四:  2次查询  		498876			1			1      (有一个子查询)
+写法三: 1 次查询		498876			1			1	(无子查询)
+写法一: 1次查询     	1				1			498876    (有一个子查询,但是sql5.7优化了所以只查询一次)      (如果是5.5的话就会发生两次查询)
+写法二： 2次查询  		1				498876  	1       498876  
+
+
+
+
+
+
+
+
+
+
+
+
+//--------------------------------习题-----------------------------//
+#l.列出自己的掌门比自己年龄小的人员
+ select ab.* from (select a.*,b.CEO from t_emp a LEFT JOIN t_dept b on a.deptld=b.id) ab 
+ LEFT JOIN t_emp c on ab.CEO=c.id where ab.age < c.age;
+ 
+ 
+ 
+ #2列出所有年龄低于自己门派平均年龄的人员
+ select d.* from (select deptld,AVG(age) a from t_emp c GROUP BY deptld) ab
+ LEFT JOIN t_emp d on ab.deptld=d.deptld  where d.age<ab.a;
+ 
+
+
+#3列出至少有2个年龄大于40岁的成员的门派
+SELECT d.* from (SELECT count(*) c,deptld from  t_emp WHERE age>40 GROUP BY deptld) ab
+LEFT JOIN t_dept d on d.id=ab.deptld where ab.c>=2;
+
+
+
+
+#4.至少有2位非掌门人成员的门派
+SELECT * from (SELECT count(*) c,deptld from  t_emp  GROUP BY deptld) ab
+LEFT JOIN t_dept d on d.id=ab.deptld where ab.c>2;
+
+
+
+
+
+#5.列出全部人员，并增加一列备注是否为掌门，如果是掌门显示是，不是掌门显示不是；
+
+
+
+
+#6.列出全部门派，并增加一列备注“老鸟or菜鸟",若门派的平均值年龄>50显示“老鸟”，否则显示"菜鸟";
+
+
+
+
+#7.显示每个门派年龄最大的人
+select a.* from t_emp a join (select id,MAX(age) from t_emp GROUP BY deptld) ab on a.id=ab.id
+
+
+
+#8.显示每个门派年龄第二大的人
+select a.* from t_emp a LEFT JOIN (select deptld,MAX(age) m from t_emp GROUP BY deptld) ab 
+on ab.deptld=a.deptld where a.age<ab.m GROUP BY a.deptld HAVING MAX(a.age)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

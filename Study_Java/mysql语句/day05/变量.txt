@@ -1,0 +1,234 @@
+#变量
+/*
+
+
+系统变量：
+	全局变量
+	
+	
+自定义变量
+		用户变量
+		局部变量
+
+*/
+
+
+//--------------系统变量--------------//
+#说明：
+	变量是由系统提供，不是用户定义，属于服务器层面
+	
+	
+#1.使用的语法：
+	1.查看所有的系统变量
+	show global varables;(全局)
+	show seesion varables;(会话)
+		
+
+#2.查看满足条件的部分系统变量
+	show globall [seession] variables like '%char%';
+	
+	
+#3.查看指定的某个系统变量的值
+	select @@global|session系统变量名;
+	
+	
+#4.为某个系统变量赋值
+方式一：
+	set global|session 系统变量名 = 值		
+
+方式二：
+	set @@global|session 系统变量名=值
+	
+//-----------------------------------//
+
+
+
+
+
+//作用域
+	服务器每次指定将为所有的全局变量赋值，针对所有的跨连接有效，但不能跨重启，重启之后会初始化值。
+
+
+
+//--------------全局变量(跨连接有效)--------------//
+#①查看所有的全局变量
+show global variables;
+
+#②查看部分的全局变量
+show global variables like '%char%'
+
+
+#③查看指定全局变量的值
+select @@global.autocommit;
+select @@tx_isolation;
+
+
+#④为某个指定的全局变量赋值
+set @@global.autocommit=0;
+
+
+//-----------------------------------//
+
+
+
+
+
+
+
+
+//--------------会话变量(跨连接有效)--------------//
+
+/*
+作用域；
+	仅仅针对于当前会话连接有效
+	
+*/
+
+#①查看所有的会话变量
+show session variables;
+show variables;
+
+
+#②查看部分的会话变量
+show session variables like '%char%'
+show variables like '%char%'
+
+
+#③查看指定某个会话变量的值
+select @@session.autocommit;
+select @@tx_isolation;
+
+
+#④为某个指定的全局变量赋值
+set @@session.tx_isolation='read_uncommitted';
+set session tx_isolation = 'read_committed';
+
+
+//--------------------------------------------//
+
+
+
+
+
+
+
+
+
+
+//--------------自定义变量--------------//
+
+
+#1.用户变量
+作用域：
+	针对于当前会话有效，同于会话变量的作用域
+
+	
+#①声明变初始化
+set @用户变量名=值;
+set @用户变量名:=值;
+select @用户变量名 :=值;
+
+
+#②赋值（更新用户变量的值）
+方式一：通过set 或 select
+		set @用户变量=值
+		set @用户变量:=值
+		select @用户变量名 :=值;
+		
+		
+方式二：(要求查询的结果为一个变量值)
+		select 字段 into 变量名
+		from 表;
+
+#案例：
+set @name = 'join';
+set @name = 100;
+set @count = 1;
+
+#将员工的总个数赋值给count
+select count(*) into @count from employees
+
+
+
+#③查看用户变量的值
+select @变量名;
+
+
+
+
+
+//--------------------------------------------//
+
+
+
+
+//--------------自定义变量--------------//
+
+
+
+
+#2》局部变量
+/*
+作用域：仅仅在定义它的begin end块中有效
+应用在 begin end中的第一句话
+*/
+
+#①声明
+DECLARE 变量名 类型;
+DECLARE 变量名 类型 【DEFAULT 值】;
+
+
+#②赋值（更新变量的值）
+
+#方式一：
+	SET 局部变量名=值;
+	SET 局部变量名:=值;
+	SELECT @局部变量名:=值;
+#方式二：
+	SELECT 字段 INTO 具备变量名
+	FROM 表;
+#③使用（查看变量的值）
+SELECT 局部变量名;
+
+
+#案例：声明两个变量，求和并打印
+
+#用户变量
+SET @m=1;
+SET @n=1;
+SET @sum=@m+@n;
+SELECT @sum;
+
+#局部变量
+DECLARE m INT DEFAULT 1;
+DECLARE n INT DEFAULT 1;
+DECLARE SUM INT;
+SET SUM=m+n;
+SELECT SUM;
+
+
+#用户变量和局部变量的对比
+
+		作用域			定义位置		语法
+用户变量	当前会话		会话的任何地方		加@符号，不用指定类型
+局部变量	定义它的BEGIN END中 	BEGIN END的第一句话	一般不用加@,需要指定类型
+
+
+//--------------自定义变量--------------//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

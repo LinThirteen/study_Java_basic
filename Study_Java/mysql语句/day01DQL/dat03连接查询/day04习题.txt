@@ -1,0 +1,11 @@
+
+
+
+
+
+//--------------------自连接-----------------//
+
+#案例：查询  员工名和上级的名称
+select e.employee_id,e.last_name,m.employee_id,m.last_name from employees e,employees m where e.employee_id=m.employee_id;
+
+//-------------------------------------------//

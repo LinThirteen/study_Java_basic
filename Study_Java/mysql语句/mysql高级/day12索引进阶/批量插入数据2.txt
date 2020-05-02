@@ -1,0 +1,157 @@
+#案例插入100万行数据
+
+	1.insert into xx values（），（），（）......
+	2.开启事务提交
+	3.多线程插入数据
+
+
+----------------------------------------------------
+1.创建表
+
+create table emp(
+
+	id int(11) not null auto_increment,
+	empno int not null,
+	name varchar(20) DEFAULT null,
+	age int(3) DEFAULT null,
+	deptld int(11) default null,
+	PRIMARY KEY(id)
+
+)ENGINE=INNODB auto_increment=1 DEFAULT CHARSET=utf8
+
+
+
+create table dept(
+	id int(11) not null	primary key auto_increment,
+	deptName varchar(30) DEFAULT null,
+	address varchar(40) DEFAULT null,
+	ceo int null
+
+	) engine = INNODB auto_increment=1 default charset=utf8;
+
+
+
+
+2.开启允许写函数开关
+set global log_bin_trust_function_creators=1;
+
+
+
+3.创建函数(declare为声明的意思)
+	
+	
+	#随机生成字符串
+	delimiter $$
+	create function rand_string(n int) returns varchar(255)
+	begin
+	declare chars_str varchar(100) default
+	'azxcvbsndmfgjhklpoiuytrewqQWERTYUIOPLKMJNHBGVFCDSAZ';
+	declare return_str varchar(255) default "";
+	declare i int defalut 0;
+	while i < n DO
+	set return_str = concat(return_str,substring(chars_str,floor(1+rand()*52),1));
+	set i = i+1;
+	end while;
+	return return_str;
+	end $$
+
+
+
+	#随机生成数字
+	DELIMITER $$
+	create function rand_num(from_num int,to_num int) returns int(11)
+	begin
+	declare i int default 0;
+	set i=floor(from_num+rand()*(to_num-from_num+1));
+	return i;
+	end $$ 
+
+
+
+
+
+4.创建存储过程(往数据表里面灌输数据)
+
+	DELIMITER $$
+	create procedure insert_emp(start int,max_num int)
+	begin
+	declare i int default 0;
+	set autocommit=0;
+	repeat
+	set i=i+1;
+	insert into emp(empno,NAME,age,deptld) value((start+i),rand_string(6),rand_num(30,50) ,rand_num(1,10000));
+	until i= max_num
+	end repeat;
+	commit;
+	end$$
+	
+	
+	
+	
+	DELIMITER $$
+	create procedure insert_dept(max_num int)
+	begin
+	declare i int default 0;
+	set autocommit=0;
+	repeat
+	set i=i+1;
+	insert into dept(deptname,address,ceo) values (rand_string(8),rand_string(10),rand_num(1,500000));
+	until i= max_num
+	end repeat;
+	commit;
+	end$$
+
+
+
+5.调用存储过程,
+	往dept表添加1万条数据
+	delimiter;(修改结束符)
+	call insert_dept(10000);
+	
+	往emp表添加50行数据
+	delimiter;(修改结束符)
+	call insert_emp(100000,500000);(员工编号从100000开始到600000万
+
+
+
+6.创建索引
+	创建
+		create [unique] index [indexName] on table_name(column))
+	删除
+		drop index [indexName] on table_name
+	查看
+		show index from table_name\G
+
+
+	查看 statistics 表下的索引
+	select index_name from information_schema.statistics where table_name='test03' 
+	and table_schema='db0629' and index_name <>'PRIMARY' and seq_in_index=1;
+
+	
+	
+	
+	删除索引工具
+		DELIMITER $$
+		CREATE PROCEDURE `proc_drop_index`(dbname VARCHAR(200),tablename VARCHAR(200))
+		BEGIN
+		DECLARE done INT DEFAULT 0;
+		DECLARE ct INT DEFAULT 0;
+		DECLARE _index VARCHAR(200) DEFAULT '';
+		DECLARE _cur CURSOR FOR SELECT index_name FROM information_schema.STATISTICS WHERE
+		table_schema=dbname AND table_name=tablename AND seq_in_index=1 AND index_name <>'PRIMARY' ;
+		DECLARE CONTINUE HANDLER FOR NOT FOUND set done=2 ;
+		OPEN _cur;
+		FETCH _cur INTO _index;
+		WHILE _index<>'' DO
+		SET @str = CONCAT("drop index ",_index," on ",tablename );
+		PREPARE sql_str FROM @str ;
+		EXECUTE sql_str;
+		DEALLOCATE PREPARE sql_str;
+		SET _index='';
+		FETCH _cur INTO _index;
+		END WHILE;
+		CLOSE _cur;
+		END$$
+	
+
+		call proc_drop_index("尚硅谷2","emp");

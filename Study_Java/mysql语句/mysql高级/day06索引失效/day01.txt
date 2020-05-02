@@ -1,0 +1,284 @@
+
+
+索引失效的原因：
+	①全值匹配我最爱
+	②最佳左前缀法则
+	③不在索引列上做任何操作（计算，函数，（自动or手动）类型转换），会导致索引失效而转向全表扫描
+	④存储引擎不能使用索引中范围条件右边的列
+	⑤尽量使用覆盖索引（只访问索引的查询（索引列和查询一致）），减少select*
+	⑥mysql在使用不等于（!=或者<>）的时候无法使用索引会导致全表扫描
+	⑦is null,is not null无法使用索引
+	⑧like以通配符开头（‘%abc...’）mysql索引失效会变成全表扫描操作
+	⑨字符串不加单引号索引失效
+	⑩少用or，用他来连接时会索引失效
+
+
+
+
+
+
+
+//---------------------索引失效(应该避免)-----------------//
+
+#案例：给staffs表的name，age，pos添加索引
+	
+	alter table staffs add index index_staffs_nameAgePos(name,age,pos);
+	
+	
+
+	-------------------------------------------------------------------
+	
+	①全值匹配我最爱
+		explain select * from staffs where name="July";（索引不会失效，部分使用到了）		
+		type:ref         key_len:74     ref:const    rows:1      extra:using where
+		
+		
+		explain select * from staffs where name="July" and age=25;（索引不会失效，部分使用到了）		
+		type:ref         key_len:78     ref:const,const	    rows:1      extra:using where
+		
+		
+		explain select * from staffs where name="July" and pos="dev";（索引不会失效，部分使用到了）		
+		type:ref         key_len:74     ref:const,const	    rows:1      extra:using where
+		
+		
+		
+		explain select * from staffs where name="July" and age=25 and pos='dev';（索引不会失效，部分使用到了）		
+		type:ref         key_len:140     ref:const,const,const	    rows:1      extra:using where
+		
+		
+		explain select * from staffs where  age=25 and pos='dev';（索引失效）		
+		type:all         key_len:null     ref:null    rows:3      extra:using where
+		
+		
+		explain select * from staffs where pos='dev';（索引失效）		
+		type:all         key_len:null     ref:null    rows:3      extra:using where
+		
+		
+		
+	-------------------------------------------------------------------
+		
+	②最佳左前缀法则：如果索引为多列，要遵循最左前缀法则，指的是查询从索引的最左前列开始并且不跳过索引中的树
+		
+		explain select * from staffs where name="July";（索引不会失效，部分使用到了）		
+		type:ref         key_len:74     ref:const    rows:1      extra:using where
+		
+		
+		
+		explain select * from staffs where  age=25 and pos='dev';（索引失效）		
+		type:all         key_len:null     ref:null    rows:3      extra:using where
+		
+		
+		explain select * from staffs where pos='dev';（索引失效）		
+		type:all         key_len:null     ref:null    rows:3      extra:using where
+		
+		
+		
+		
+	-------------------------------------------------------------------
+			
+			
+	s③不在索引列上做任何操作（计算，函数，（自动or手动）类型转换），会导致索引失效而转向全表扫描
+		
+		
+	(性能低)	explain select * from staffs where left(name,4)='July';(查询表中July的内容，如果left(name,3)则为Jul,查询结果为0
+		type:all         key_len:null     ref:null    rows:3      extra:using where
+		
+		
+	(性能高)	explain select * from staffs where name="July";（索引不会失效，部分使用到了）		
+		type:ref         key_len:74     ref:const    rows:1      extra:using where
+		
+		
+		
+		
+	-------------------------------------------------------------------
+		
+		
+	④存储引擎不能使用索引中范围条件右边的列(范围之后全失效)
+		
+		explain select * from staffs where name="July" and age>25 and pos='manager';
+		type:range         key_len:78     ref:null    rows:1      extra:using where
+		
+		
+		
+	-------------------------------------------------------------------
+		
+		
+	⑤尽量使用覆盖索引（只访问索引的查询（索引列和查询一致）），减少select*
+		
+	  explain select * from staffs where name="July" and age=25 and pos='manager';
+	  type:ref         key_len:140     ref:const,const,const    rows:1      extra:using where
+		
+		
+	  explain select name,age,pos from staffs where name="July" and age=25 and pos='manager';
+	  type:ref         key_len:140     ref:const,const,const    rows:1      extra:using where,using index
+	  
+	  
+  	  explain select name from staffs where name="July" and age=25 ;
+	  type:ref         key_len:78     ref:const,const    rows:1      extra:using where,using index
+	  
+	
+	  (用 >  < 符号）(从索引上去)	
+	  explain select name,age,pos from staffs where name="July" and age>25 and pos='manager';
+	  type:ref         key_len:74     ref:const    rows:1      extra:using where,using index
+			
+			
+	 (用 = 符号）(从索引上去)	
+	  explain select name,age,pos from staffs where name="July" and age=25 ;
+	  type:ref         key_len:78    ref:const,const    rows:1      extra:using where,using index	
+	
+		
+	-------------------------------------------------------------------
+		
+		
+	⑥mysql在使用不等于（!=或者"<>"）的时候无法使用索引会导致全表扫描
+		
+	  explain select * from staffs where name!="July" ;
+	  type:all        key_len:null    ref:null    rows:3      extra:using where
+		
+		
+	  explain select * from staffs where name<>"July" ;
+	  type:all        key_len:null    ref:null    rows:3      extra:using where
+	
+	
+	
+	
+	-------------------------------------------------------------------
+	
+	
+	
+	⑦is null,is not null无法使用索引
+	
+	 explain select * from staffs where name is null ;
+     type:all        key_len:null    ref:null    rows:3      extra:impossible where
+	
+	
+	
+	(理论上应该用到，但是实际上没有用到索引)
+	 explain select * from staffs where name is not null ;
+     type:all        key_len:null.   key:null    ref:null    rows:3      extra:using where
+	
+	
+	
+	-------------------------------------------------------------------
+	
+	
+	⑧like以通配符开头（‘%abc...’）mysql索引失效会变成全表扫描操作
+	
+		
+	  explain select * from staffs where name!="July" ;
+	  type:ref        key_len:74    ref:const    rows:1      extra:using where
+	  
+	
+		explain select * from staffs where name like "%July%" ;
+	    type:all        key_len:null    ref:null    rows:3      extra:using where
+		
+		
+		explain select * from staffs where name like "%July" ;
+	    type:all        key_len:null    ref:null    rows:3      extra:using where
+		
+		
+		
+		特殊：
+		explain select * from staffs where name like "July%" ;
+	    type:range       key_len:74    key:index....   ref:null    rows:3      extra:using where
+	
+	
+	
+	
+	解决：like %字符串%时索引不被使用的方法？？	
+	
+			EXPLAIN select name,age from tbl_user where name like '%aa%';
+		    type:all      key_len:null      ref:null    rows:4      extra:using where
+			
+	
+	      解決：(用覆盖索引解决like的问题)
+	      建立索引：
+	      create index idx_user_nameAge on tbl_user(name,age);
+	      
+	      EXPLAIN select name,age from tbl_user where name like '%aa%';
+		  type:index   key_len:68      ref:null    rows:4      extra:using where,using index
+	
+	
+		  (单查找age)
+	      EXPLAIN select age from tbl_user where name like '%aa%';
+		  type:index   key_len:68      ref:null    rows:4      extra:using where,using index
+		
+	
+		  (单查找id,name,age)
+	      EXPLAIN select id,name,age from tbl_user where name like '%aa%';
+		  type:index   key_len:68      ref:null    rows:4      extra:using where,using index
+		
+		
+		   (查找*所有)
+	      EXPLAIN select * from tbl_user where name like '%aa%';
+		  type:all   key_len:null      ref:null    rows:4      extra:using where
+		
+		
+		
+		  (单查找id,name,age,email)(建立的索引中没有email)
+	      EXPLAIN select id,name,age,email from tbl_user where name like '%aa%';
+		  type:all  key_len:null      ref:null    rows:4      extra:using where
+		
+		
+	
+	-------------------------------------------------------------------
+	
+		
+		⑨字符串不加单引号索引失效(varchar(xx)类型不要忘记+单引号)
+	
+		
+		案例：
+			①
+			select * from staffs where name = '2000';
+			②
+			select * from staffs where name = 2000;
+	
+	
+	
+	explain select * from staffs where name = '2000';
+    type:ref   key_len:74      ref:const    rows:1      extra:using where
+	
+	
+	
+	(有可能索引但是实际没有用到)
+	explain select * from staffs where name = 2000;
+    type:all   key_len:null      ref:null   rows:3      extra:using where
+	
+	
+	
+	
+	-------------------------------------------------------------------
+	
+	
+		⑩少用or，用他来连接时会索引失效
+		
+				
+		   (有可能索引但是实际没有用到)
+	      EXPLAIN select * from STAFFS where name= 'July' or name="z3";
+		  type:all   key_len:null      ref:null    rows:4      extra:using where
+		
+	
+		 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+		
+		

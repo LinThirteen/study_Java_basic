@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<session version="1.0">
+<refactoring comment="Rename resource &apos;redis/src/day01/基本概念.txt&apos; to &apos;01基本概念.txt&apos;" description="Rename resource &apos;基本概念.txt&apos;" flags="7" id="org.eclipse.ltk.core.refactoring.rename.resource" input="src/day01/基本概念.txt" name="01基本概念.txt" stamp="1587483072804" updateReferences="true"/>
+</session>

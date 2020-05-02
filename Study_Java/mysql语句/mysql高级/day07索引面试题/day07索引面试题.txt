@@ -1,0 +1,188 @@
+
+定制，范围还是排序，一般order by是给个范围
+group by基本上都需要进行排序，会有临时表产生
+
+
+一般性建议：
+	对于单键索引，尽量选择针对当前query过滤性更好的索引
+	在选择组合索引的时候，当前query中过滤性更好的字段在索引字段顺序中，位置越靠前越好
+	在选择组合索引的时候，尽量选择可以能够包含当前query中的where子句中更多字段的索引
+	尽可能通过分析统计信息和调整query的写法来达到选择合适的索引的目的
+
+
+
+口诀：
+		
+	全值匹配我最爱，最左前缀要遵守；
+	带头大哥不能死，中间兄弟不能断；
+	索引列上少计算，范围之后全失效；
+	like百分写最右，覆盖索引不写星；
+	不等空值还有or，索引失败要少用；
+	 VAR引号不可丢，sql高级也不难！
+
+
+
+
+
+
+//---------------------------------------------------//
+#建立复合索引:
+	
+	create index idx_test03_c1234 on test03(c1,c2,c3,c4)
+	show index from test03
+	
+	
+	案例;(常量级别范围索引会根据优化，所以不会索引失效)
+		
+		explain select * from test03 where c1="a1" and c2 = "a2" and c4 = "a4" and c3="a3";
+		type:ref       possible_key:idx_test03_c1234     key:idx_test03_c1234     key_len:124     ref:const,const,const,const    rows:1      extra:using where
+:
+		
+		
+		explain select * from test03 where  c4 = "a4" and c3="a3" and c2="a2" and c1 = "a1"; 
+		type:ref       possible_key:idx_test03_c1234     key:idx_test03_c1234     key_len:124     ref:const,const,const,const    rows:1      extra:using where
+		
+	
+	
+	
+	
+	案例：
+		
+		
+		explain select * from test03 where c1="a1" and c2 = "a2" and c3 > "a3" and c4="a4";(范围之后全失效)
+		type:range       possible_key:idx_test03_c1234     key:idx_test03_c1234     key_len:93     ref:null    rows:1        extra:using where
+		
+	
+	
+		explain select * from test03 where c1="a1" and c2 = "a2" and c4 > "a4" and c3="a3";(用到4个索引)
+		type:range       possible_key:idx_test03_c1234     key:idx_test03_c1234     key_len:124     ref:null  rows:1         extra:using where
+	
+	
+	
+	
+		explain select * from test03 where c1="a1" and c2 = "a2" and c4 = "a4" order by c3; 
+		type:ref       possible_key:idx_test03_c1234     key:idx_test03_c1234     key_len:62     ref:const,const   rows:1     extra:using where
+	
+	
+	
+		explain select * from test03 where c1="a1" and c2 = "a2"  order by c3; 
+		type:ref       possible_key:idx_test03_c1234     key:idx_test03_c1234     key_len:62     ref:const,const   rows:1     extra:using where
+	
+	
+	
+		explain select * from test03 where c1="a1" and c2 = "a2"  order by c4; 
+		type:ref       possible_key:idx_test03_c1234     key:idx_test03_c1234     key_len:62     ref:const,const   rows:1     extra:using where   using filesort(性能降低)        
+	
+		
+	
+	
+	案例：
+		
+		
+		explain select * from test03 where c1="a1" and c5 = "a5"  order by c2,c3; 
+		type:ref       possible_key:idx_test03_c1234     key:idx_test03_c1234     key_len:31     ref:const 	 rows:1     extra:using where           
+		
+	
+	
+	
+		explain select * from test03 where c1="a1" and c5 = "a5"  order by c3,c2; 
+		type:ref       possible_key:idx_test03_c1234     key:idx_test03_c1234     key_len:31     ref:const  	rows:1     extra:using where   using filesort(性能降低)        
+		
+	
+	
+		explain select * from test03 where c1="a1" and c2 = "a2"  order by c2,c3; 
+		type:ref       possible_key:idx_test03_c1234     key:idx_test03_c1234     key_len:62     ref:const,const      rows:1     extra:using where
+	
+	
+	
+		explain select * from test03 where c1="a1" and c2 = "a2" and c5 = "a5"  order by c2,c3; 
+		type:ref       possible_key:idx_test03_c1234     key:idx_test03_c1234     key_len:62     ref:const,const      rows:1     extra:using where
+	
+		
+		
+		explain select * from test03 where c1="a1" and c2 = "a2" and c5 = "a5"  order by c3,c2; 
+		type:ref       possible_key:idx_test03_c1234     key:idx_test03_c1234     key_len:62     ref:const,const      rows:1     extra:using where
+	
+	
+	
+	
+	
+	案例：(group by)
+		
+	
+		explain select * from test03 where c1="a1" and c4 = "a4"  group  by c2,c3; 
+		type:ref       possible_key:idx_test03_c1234     key:idx_test03_c1234     key_len:31     ref:const    rows:1     extra:using where
+	
+		
+		explain select * from test03 where c1="a1" and c4 = "a4"  group  by c3,c2; 
+		type:ref       possible_key:idx_test03_c1234     key:idx_test03_c1234     key_len:31     ref:const    rows:1     extra:using where    using filesort  using filesort
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

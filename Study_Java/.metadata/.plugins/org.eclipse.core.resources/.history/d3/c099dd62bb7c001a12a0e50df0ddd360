@@ -1,0 +1,55 @@
+
+
+
+
+create table t_dept(
+	id int(11) not null auto_increment PRIMARY KEY,
+	deptName varchar(30) default null,
+	address varchar(40) default null
+	
+	
+)ENGINE=INNODB auto_increment=1 DEFAULT charset=utf8
+
+
+
+
+
+create table t_emp(
+
+	id int(11) not null auto_increment PRIMARY KEY,
+	name varchar(20) default null,
+	age int(3) default null,
+	deptld int(11) DEFAULT null,
+	empno int not null
+
+	
+)ENGINE=INNODB auto_increment=1 DEFAULT charset=utf8;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

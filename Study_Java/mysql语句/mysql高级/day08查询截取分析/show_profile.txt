@@ -1,0 +1,118 @@
+
+
+是什么：是mysql提供可以用来分析当前会话中语句执行的资源消耗情况。可以用sql的调优的侧量
+
+
+默认情况下，参数处于关闭，并保存最近15次的运行结果
+
+
+
+
+
+------------------------------------------------------------------------
+
+
+查看：show variables like "profiling";
+
+set profiling=on;
+
+
+sql语句：
+		
+		select * from emp group by id%10 limit 150000;
+		
+		
+		select * from emp group by id%20 order by;
+
+
+		查看所有执行过的sql
+			show profiles；
+		
+
+		查看id为3的sql查询资料
+			show profile cpu,block io for query 3;
+
+
+		查询后要注意的结果;
+			
+			converting HEAP to MYISAM 查询结果太大，内存都不够用了往磁盘上搬了
+			
+			creating tmp table 创建临时表：
+										拷贝数据到临时表
+										用完在删除
+										
+			copying to tmp table on  disk 把内存中临时表复制到磁盘，危险！
+			
+			locked
+			
+			
+			
+			
+			
+			全局查询日志
+			
+				配置启动;
+					
+					在mysql的my.cnf中，设置如下：
+						#开启
+							general_log=1
+						#记录日志文件的路径
+							general_log_file=/path/logfile
+							
+						#输出格式
+							log_output=FILE
+				
+				编码启动;
+					
+					set global general_log=1
+			
+					set global log_output='TABLE';
+			
+			
+					select * from mysql.general_log;
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+
+
+
+
+
+
+
+
+
+
+
+
+

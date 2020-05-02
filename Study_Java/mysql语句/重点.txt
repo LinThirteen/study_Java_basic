@@ -1,0 +1,42 @@
+
+
+		1.保证被驱动表的join字段已经被索引
+		2.left join 时，选择小表作为驱动表，大表作为被驱动表
+		3.inner join 会自己帮你把小结果的表选为驱动表
+		4.子查询不要放在被驱动表，有可能使用不到索引
+		5.能够直接关联的尽量直接关联，不要用子查询
+
+
+
+
+
+
+#写法一：第四快
+select c.name,ab.name ceoname from t_emp c LEFT JOIN 
+(SELECT b.id,a.`name` from t_emp a LEFT JOIN t_dept b on b.CEO=a.id) ab 
+on c.deptld=ab.id;
+
+
+
+
+
+#写法二：第三快
+select c.name,ab.name ceoname from
+(SELECT a.`name`,b.CEO from t_emp a LEFT JOIN t_dept b on a.deptld=b.id) ab 
+LEFT JOIN t_emp c on ab.ceo=c.id;
+
+
+
+
+
+
+
+其中 子查询为虚拟表	
+			
+			
+			如果虚拟表作为被驱动表，那么虚拟表本来就没有索引，会大大的降低查询速率
+			如果虚拟表作为驱动表，那么真实表就作为被驱动表，被驱动表中的索引才有效
+
+
+
+

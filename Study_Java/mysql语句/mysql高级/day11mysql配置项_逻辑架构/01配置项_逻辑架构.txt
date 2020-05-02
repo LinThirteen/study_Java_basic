@@ -1,0 +1,96 @@
+
+
+
+
+
+
+group by使用原则： select  后面只能放 函数 和 gruop by后面的字段
+
+
+
+#5.5版本缺少："only_full_group_by"
+	show variables like 'sql_mode';
+
+设置 only_full_group_by：
+	set sql_mode="only_full_group_by"
+  
+
+兼容oracle数据库：
+ 	set sql_mode="oracle"
+
+
+
+
+缓存和缓冲得作用
+		
+		缓存：读信息用
+		
+		
+		缓冲：写信息用
+
+
+
+
+逻辑架构：
+									有
+		sql语句  -------->连接池-------------->caches&buffers 缓存和缓冲(返回)
+							|
+							|				（接口，DML,DDL...)`				(解析器)					（优化器)
+							-------------->sql interface --------------------> parser--------------->optimizer(查到的
+																										|
+																										|
+				（结果返回并存一份到缓存）---------------(innodb，myisam.等)存储引擎----------------------|																						|			
+
+
+启动查询缓存:
+	在配置文件 /etc/my.cnf的[mysqld]下新增
+			query_cache_type=1;
+		
+				
+注意：只有sql语句一摸一样的前提下才能命中缓存
+
+查看数据信息：
+	执行语句：select * from mytbl2 where id=2;
+	
+	show profiles;
+	
+	show profile cpu,block io for query 执询语句的id号;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,85 @@
+
+字符函数：
+concat:连接
+substr:截取子串
+upper:变大写
+lower:变小写
+replace:替换
+length：获取字节长度
+trim：去掉前后空格
+lpad:左填充
+rpad:右填充
+
+
+
+//---------------练习题--------------------//
+#1.显示系统时间：
+select NOW();
+
+
+#2.查询员工号，姓名，工资，以及工资，提高20%后的结果（new salary）
+select employee_id,last_name,salary,salary*1.2 "new salary" from employees
+
+#3.将员工的姓名按首字母排序，并写出姓名的长度
+select length(last_name),substr(last_name,1,1) 首字母，last_name from empolyees order by  首字母;
+
+
+#4.做一个查询，产生下面的结果
+<last_name>earns<salary>monthly but wants <salary*3> Dream Salary 
+King earns 24000 monthly but wants 72000
+select concat(lasat_name,"earns",salary,"monthly but wants", salary*3)	as "Dream Salary" from employees where salary=24000;
+
+
+#5.使用case-when,按照下面的条件查询
+job   grade
+ad_pres  A
+st_man   B
+it_prog  C
+产生下面的结果
+last_name job_id grade 
+king ad_pres A
+
+select last_name,job_id as job,
+case job,
+when "ad_pres" then 'A'
+when "st_man" then 'B'
+when "it_prog" then 'c'
+end as grade 
+from empolyees
+where job_id= "ad_pres";
+
+//-----------------------------------------------//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

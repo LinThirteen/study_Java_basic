@@ -1,0 +1,23 @@
+
+
+-------------------------------------------------------------
+//级联删除
+alter table stuinfo add constraint fk_stu_major foreign key(majorid) references major(id) on delete cascade;
+
+
+#删除专业表的3号专业
+delete from major where id=3
+
+
+
+---------------------------------------------------------------
+//级联置空
+alter table stuinfo add constraint fk_stu_major foreign key(majorid) references major(id) on delete set null;
+
+
+#删除专业表的3号专业
+delete from major where id=3
+
+
+
+

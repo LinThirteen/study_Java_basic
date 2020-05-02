@@ -1,0 +1,84 @@
+
+
+
+
+
+//---------------事务的创建-----------------//
+
+事务的创建
+	隐式事务：事务没有明显的开启和结束的标记
+	比如insert、update、delete语句
+	
+	(代表一个事务的开启)
+	delete from 表 where id =1;
+	
+	
+显式事务：事务具有明显的开启和结束的标记
+前提：必须先设置自动提交功能为禁用
+
+set autocommit=0;
+
+show variables like 'autocommit';(查看事务表)
+
+
+
+步骤一：开启事务
+	set autocommit = 0
+	start transaction; 写上则表示默认开启事务
+
+
+步骤二；编写事务中的sql语句（select insert update delete)
+		语句1；
+		语句2；
+		....
+		
+步骤三；结束事务
+		commit；提交事务
+		rollback；回滚事务	
+	
+	
+//--------------------------------------------//	
+	
+	
+	
+	
+	
+	
+//------------------演示使用步骤-------------//
+
+drop table if exists account;
+
+create table account(
+
+		id int primary key auto_increment,
+		username varchar(20),
+		balance double
+
+);
+
+insert into account(username,balance)
+values('张无忌',1000),('赵敏',1000)
+
+
+#步骤1：开启事务
+start transaction;
+
+#步骤二：编写事务的语句
+update account set balance = 500 where username = '张无忌';
+update account set balance = 1500 where username = '赵敏';
+
+#步骤三：结束事务
+#结束1
+commit;
+#结束2
+rollback；
+
+
+//--------------------------------------------//	
+
+	
+	
+	
+	
+	
+	

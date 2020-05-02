@@ -1,0 +1,175 @@
+一，按条件表达式筛选
+简单条件运算符：>  <   =   !=    <=     >=    <>  
+
+
+二，按逻辑表达式筛选
+逻辑运算符：
+	&&  ||  ！
+	and or not
+
+
+三，模糊查询
+	like
+	between and
+	in 
+	is null
+
+
+
+
+
+//--------------按条件表达式查询-----------------//
+
+案例一：查询工资>12000的员工信息
+select * from emloyees where salary>12000;
+
+案例二：查询部门编号不等于90号的员工名和部门编号
+select last_name,department_id from employees where department_id!=90;
+//-----------------------------------------------//
+
+
+
+
+//--------------按逻辑表达式查询-----------------//
+
+案例一；查询工资在10000到20000之间的员工名，工资以及奖金
+select last_name,salary,commission_put from employees where 10000=<salary and salary=<20000;
+
+案例二；查询部门编号不是在90到110之间，或者工资高于15000的员工信息
+select * from employees where department_id<=90 and department_id>=110 or salary>15000;
+select * from employees where not(department_id>=90 and department_id<=110) or salary>15000;
+
+//-----------------------------------------------//
+
+
+
+
+//--------------like模糊查询--------------------------------//
+like
+特点：一般和通配符搭配使用
+通配符：% 代表任意多个字符，包含0个
+		_ 任意单个字符，就一个
+		
+案例一：查询员工名中包含字符a的员工信息
+select * from employees where last_name like '%a%';
+
+
+案例二：查询员工名中第三个字符为e,第五个字符为a的员工名和工资
+select last_name,salary from employees where last_name like '__e_a%';
+
+
+案例三：查询员工名中第二个字符为_的员工名
+select last_name from employees where last_name like '_\_%'; 	加 \ 转义
+推荐：select last_name from employees where last_name like '_$_%' ESCAPE '$'; 说明'$'转义
+
+案例三：查询员工名中以'e'结尾字符为_的员工名
+推荐：select last_name from employees where last_name like '%e'; 
+
+#案例四：查询员工表中job_id包含a和e的,并且a在e前面
+select job_id from employees where job_id like "%a%e%";
+
+//-----------------------------------------------//
+
+
+
+
+
+//--------------between and在xxx之间--------------------------------//
+注意事项：
+    包含临界值
+   between和and不可以颠倒
+
+
+案例一：查询员工编号在100到120之间的员工信息
+select * from employees where id between 100 and 120;
+
+//-----------------------------------------------//
+
+
+
+//------------------模糊查询，in关键字---------------------------//
+
+in
+含义：判断某字段的值是否属于in列表中的某一项
+特点：使用in提高语句的简洁度
+	  in列表中的值类型必须一致或兼容
+	  in中支持通配符%，_
+	  
+
+案例一：查询员工的工种编号是IT_PROG,AD_VP,AD_PRES的中的一个的员工名和工种编号
+select last_name ,job_id from employees where job_id = 'IT_PROG' or job_id ='AD_VP' or job_id ='AD_PRES;
+select last_name ,job_id from employees where job_id in ('IT_PROG','AD_VP','AD_PRES);
+
+//-----------------------------------------------//
+
+
+
+
+//------------------is null或is not null---------------------------//
+注意：is只能和null或not null搭配
+
+
+案例一：查询没有奖金的员工名和奖金率
+select last_name commission_pct from employees where commission_pct = null;没有结果，原因是 ‘=’号 ，不能判断null值
+select last_name commission_pct from employees where commission_pct is null;
+
+
+案例二：查询有奖金的员工名和奖金率
+select last_name commission_pct from employees where commission_pct is not null;
+
+//-----------------------------------------------//
+
+
+
+
+//------------------安全等于 <=> ---------------------------//
+<=>既可以判断null值，也可以判断普通的数值
+
+案例一：查询没有奖金的员工名和奖金率
+select last_name commission_pct from employees where commission_pct <=> null;
+
+案例二：查询工资为12000的员工信息
+select last_name commission_pct from employees where commission_pct <=> 12000;
+
+//---------------------------------------------------//
+
+
+
+
+//------------------高级条件---------------------------//
+
+
+#案例一：查询员工为176的员工的姓名和部门好和年薪
+select last_name,department_id,salary*12*(1+IFNULL(commission_put,0) as 年薪 from employees;
+
+
+#案例二：查询employees表中，job_id不为’IT'或者工资为12000的员工信息
+select * from employees where job_id<>'IT' or salary = 12000;正确
+select * from employees where job_id is not 'IT' or salary = 12000;错误
+select * from employees where job_id not like '%IT%' or salary = 12000;正确
+
+
+案例三：查询表中涉及到的哪些位置编号
+select distinct location_id from departments;
+
+
+案例四：select * from employees;和select * form employees where commission_pct '%%' and last_name like '%%';是否一样
+	答，如果有null值就不一样，没有null值就一样
+
+
+//---------------------------------------------------//
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

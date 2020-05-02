@@ -1,0 +1,113 @@
+package WebSevers;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+
+public class day03XML解析2 {
+
+	// XML 可扩展标记语言，作为数据的一种存储格式或用于存储软件的参数，
+	// 程序解析此配置文件，就可以到达不可修改代码就能更改程序的目的
+
+	public static void main(String[] args) throws ParserConfigurationException, SAXException, IOException {
+		// SAX解析
+		// 1.获取解析工厂
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		// 2.从解析工厂获取解析器
+		SAXParser parse = factory.newSAXParser();
+		// 3.编写处理器
+		// 4.加载文档Document注册处理器
+//		PersonHandler personhandler = new PersonHandler();
+		PersonHandler personhandler = new PersonHandler();
+		// 5.解析:从当前线程的类加载器中获取 如果包名为com.sxt.server.basic
+		// 那么getResourceAsStream("com/sxt/server/basic/p.xml")
+		parse.parse(Thread.currentThread().getContextClassLoader().getResourceAsStream("WebSevers/p.xml"),
+				personhandler);
+		
+		//获取数据
+		List<Person> persons =personhandler.getPersons();
+		for(Person p:persons) {
+			System.out.println(p.getName()+"---------->"+p.getAge());
+			
+		}
+	}
+}
+
+class PersonHandler extends DefaultHandler {
+	private List<Person> persons;
+	private Person person;
+	private String tag;// 存儲操作的标签
+
+	@Override
+	public void startDocument() throws SAXException {
+		// TODO Auto-generated method stub
+		System.out.println("----解析文档开始-----");
+		persons = new ArrayList<Person>();
+	}
+
+	@Override
+	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+		// TODO Auto-generated method stub
+		System.out.println(qName + "---->解析开始");
+		if (null != qName) {
+			tag = qName;// 存儲操作的标签
+
+			if (tag.equals("person")) {
+				person = new Person();
+			}
+		}
+	}
+
+	@Override
+	public void characters(char[] ch, int start, int length) throws SAXException {
+		// TODO Auto-generated method stub
+		String contents = new String(ch,start,length).trim();
+//		if(contents.length()>0) {
+//		System.out.println("内容为"+contents);
+//		}else{
+//			System.out.println("内容为"+"空");
+//			}
+		if(null!=tag) {
+		if(tag.equals("name")) {
+			person.setName(contents);
+		}else if(tag.equals("age")){
+//			if(contents.length()>0){
+				person.setAge(Integer.valueOf(contents));
+//			}		
+			}
+	}}
+
+	@Override
+	public void endElement(String uri, String localName, String qName) throws SAXException {
+		// TODO Auto-generated method stub
+		System.out.println(tag + "---->解析结束");
+
+		if(null!=qName) {
+		if (qName.equals("person")) {
+			persons.add(person);
+		}
+		}
+		tag = null;//例如解析完name后系统还会去tag=name去解析空，然后setName(contents);
+	}
+
+	@Override
+	public void endDocument() throws SAXException {
+		// TODO Auto-generated method stub
+		System.out.println("----解析文档结束-----");
+		
+	}
+
+	public List<Person> getPersons() {
+		return persons;
+	}
+
+}
+

@@ -1,0 +1,65 @@
+
+
+set集合(无序)
+	set是string类型的无序集合，他底层其实是一个value
+	为null的hash(相当于map)表，所以添加，删除，查询的复杂度都是o(1)
+	
+
+
+
+
+-----------------------基本命令-------------
+#将一个或多个member元素加入到集合key当插入的值已经存在于集合memeber元素将被忽略
+	sadd test2 a b c d e 
+
+
+#取出该集合的所有值
+	smemebers key
+
+
+#判断几个key是否为含有该value值，有则返回1，没有则返回0
+	sismember key value
+
+
+
+#返回该集合的元素个数
+	scard key
+	
+
+#删除集合中的某个元素
+	srem key value value2
+
+
+#随机从该集合中吐出一个值
+	spop key
+	
+
+#随机从该集合中取出n个值，不会从集合中删除
+	srandmember key n
+
+
+
+
+-----------------set集合特有------------------
+
+#返回两个集合的交集元素
+	sinter key1 key2
+	
+	
+	
+#返回两个集合并集元素 （连个集合所有不重复的集合)
+	sunion key1 key2
+
+
+#返回两个集合的差集元素 (key1有 key2没有)
+	sdiff key1 key2
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,179 @@
+
+
+
+
+启动mongo：mongod --dbpath '/home/pyvip/mongondb'
+在打开一个终端：mongo  
+
+
+层次关系：
+	databases
+		collections
+			document
+
+
+--------------------------基本命令------------------
+
+#查看有多少个数据库
+show dbs
+show databases
+
+
+
+#进入数据库(没有则创建，只有插入成功才能顺利创建)
+use test
+
+
+
+#查看当前数据库
+db
+
+
+#查看数据库里面有几个集合
+show collections
+
+
+
+#数据库的CRUD的操作（增删改查）
+	
+	#向数据库中插入文档
+		-db.collection(集合名).insert(doc)
+		-当我们向集合中插入文档时，如果没有_id属性，则数据会自助为文档添加_id
+
+
+	#例子：向test数据库中的，stus集合中插入一个新的学生对象
+		 db.stus.insert(
+			{name:"学生",age:10,gender:"男"}
+			)
+
+
+
+	#查询当前集合中的所有文档
+		db.collection.find()
+
+
+
+------------------增加---------------------
+
+#插入一个
+db.stus.insert({name:"猪八戒",age:28,gender:"女"})
+db.stus.insert({_id:"hello",name:"猪八戒",age:28,gender:"女"})
+
+
+#插入多个
+db.stus.insert([
+		{name:"啦啦",age:19,gender:"女"},
+		{name:"哈哈",age:20,gender:"男"},
+		{name:"嘻嘻哈",age:21,gender:"女"},
+		])；
+
+
+db.stus.insertOne({})
+
+
+db.stus.insertMany([{}])
+
+
+
+
+
+---------------------------查询------------------------------
+
+#查询所有，返回一个数组，可以通过下标取值
+db.stus.find()
+
+
+#查询_id:"hello"
+db.stus.find({_id:"hello"})
+
+
+#查询age为28
+db.stus.find({age:28})
+
+
+#查询age为28和name为hahah
+db.stus.find({age:28,name:"hahah"})
+
+
+#返回一个对象
+db.stus.findOne({age:28}).name
+
+
+
+#查询有多少个文档
+db.stus.find({}).count();
+db.stus.find({}).length();
+
+
+
+
+--------------------------修改--------------------------
+
+     db.collections.update(查询条件,新对象)
+     	-update()默认情况下会使用新对象去替换旧对象
+     	-如果需要修改指定的属性，而不是替换需要使用“修改操作符”来完成修改
+     		$set 可以用来只修改一个
+     		$unset 删除文档指定属性
+     		
+     
+     db.collections.updateMany()
+     	-同时修改多个属性		
+
+
+     db.collections.replaceOne()
+     	-替换文档
+
+
+#将老杀年龄改成28
+db.stus.update({name:"老杀"},{name:"老杀",age:28});
+
+
+
+
+#只修改set后面的内容，没则增加属性，如果查到多个数据，默认只修改第一个数据
+db.stus.update({name:"老杀"},{$set:{ age:56,gender:"女"}});
+
+#update修改多个
+db.stus.update({name:"老杀"},{$set:{ age:56,gender:"女"}});
+
+#修改查询到的所有
+db.stus.updateMany({name:"老杀"},{$set:{ age:56,gender:"女"}},{multi:true});
+
+
+
+#删除文档指定属性
+db.stus.update({name:"老杀"},{$unset:{ age:56,gender:"女"}});
+
+
+
+
+
+
+-----------------------------删除--------------------------
+	
+	db.collections.remove()
+		-根据条件删除文档（删除全部）
+	db.collections.deleteOne()
+	db.collections.deleteMany()
+
+
+
+#删除_id为hello的文档
+db.stus.remove({_id:"hello"});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

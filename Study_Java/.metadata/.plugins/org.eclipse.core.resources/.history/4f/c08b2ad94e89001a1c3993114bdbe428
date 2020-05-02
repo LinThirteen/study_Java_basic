@@ -1,0 +1,77 @@
+
+
+文档之间的关系：
+	一对一
+	一对多
+	多对多
+
+
+
+
+
+一对一：
+	db.wifeAndHusband.insert([
+	{
+		name:"黄蓉",
+		husband:{
+			name:"郭靖"
+			}
+		},
+		{
+		name:"潘金莲",
+		husband:{
+			name:"武大"
+			}
+		}
+
+	]);
+
+
+
+
+
+
+一对多
+	
+db.users.insert([
+	{
+		name:"黄蓉",
+	},
+		{
+		name:"潘金莲",
+	}
+
+	]);
+
+
+db.order.insert({
+		list:["苹果","香蕉","梨子"],
+		user_id:ObjectId("hklsdhlfdshjfdkhkfdkhk")
+		});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,170 @@
+
+
+
+读锁为共享锁；
+
+结论：读锁会阻塞写，但是不会阻塞读，而写锁则会把读和写都阻塞
+
+
+索引失效后行锁会变成表锁，例如varchar型的数据不加单引号会导致表锁
+
+
+间隙锁：
+	会话一：
+		更新但没提交：update test_innodb_lock set b='0628' where a>1 and a<6;
+	
+	
+	会话二（插入表不存在的数据)：
+		会导致阻塞：insert into test_innodb_lock values(2,'2000')
+
+
+
+查看表的状态：
+		mysql->show status like "innodb_row_lock%"
+		
+		各个状态说明：
+			innodb_row_lock_current_waits:当前正在等待锁定的数量
+			innodb_row_lock_time:从系统启动到现在锁定总时间长度
+			innodb_row_time_avg:每次等待所花平均时间
+			innodb_row_time_max:从系统启动到现在等待最常见的一次所花的时间
+			innodb_row_lock_waits：系统启动后到现在总共等待的次数
+
+						
+
+
+			
+
+----------------------(myisam)表级锁（读锁）-------------
+
+
+create table mylock(
+
+	id int not null PRIMARY KEY auto_increment,
+	name varchar(20)
+	
+)ENGINE myisam;
+
+
+#手动增加表锁
+	lock table 表名字 read(write),表名字2 read(write),其他;
+	
+	查看有锁的表
+		show open tables;
+	
+	
+	给book加写锁，给mylock加读锁
+	
+		mysql->lock table mylock read,book write;
+		
+		
+	给所有表解锁：
+		mysql->unlock tables;
+		
+		
+	给mylock加读锁：
+		会话一：(不可以增删改，但是可以读，但是不可以读其他的表)(只能读mylock表)
+			mysql->lock table mylock read;
+		会话二：(增删改会阻塞，但是可以读，可以读其他表)
+		
+
+		给会话一解锁：
+			unlock tables；
+		会话二：(增删改解除阻塞)
+
+
+
+
+
+
+		会话一：（可读可改，不可以读其他表）
+			lock table mylock write；
+			
+		
+		会话二：（可读其他表，读mylock表会阻塞，直到unlock表解锁，不可以写）
+			
+
+
+
+-----------------------(innDB)行级锁（写锁）----------------------------------
+
+
+
+				create table test_innodb_lock (
+				   a int(11) ,
+					 b varchar(16)
+					 )engine=INNODB
+
+
+
+				建立索引(两个单值索引)：
+				create index test_innodb_a_ind on test_innodb_lock(a);
+				
+				create index test_innodb_b_ind on test_innodb_lock(b);
+
+
+
+				会话一和会话二不可以操作同一表中同一行数据，但是可以操作同一表中不同行数据
+
+
+				
+												重点
+							
+				如何锁定一行
+				会话一：
+				mysql->begin
+				mysql->select * from test_innodb_lock where a=8 for update;
+				mysql->commit
+							
+					
+							
+				会话二(会阻塞直达会话一commit)：
+				mysql->update test_innodb_lock set b="xxx" where a=8;
+
+
+
+
+-
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

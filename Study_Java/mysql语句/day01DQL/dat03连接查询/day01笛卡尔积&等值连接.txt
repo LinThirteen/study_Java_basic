@@ -1,0 +1,127 @@
+#进阶六
+
+含义：多表查询，当查询的字段来自多个表时，就用到连接查询
+
+分类：
+		按年代分类：
+		sql192标准 ：仅仅支持内连接
+		sql199标准【推荐】：支持所有内连接，外连接，交叉连接
+		
+		按功能分类：
+				内连接：
+					等值连接
+					非等值连接
+					自连接
+				
+				外连接
+					左外连接         . 主.  left outer join .从. on  
+					右外连接		 . 从.  right outer join .主. on 
+					全连接 		 .表.     full outer join .表.  on
+					
+				交叉连接
+					cross join 
+
+
+//-----------------------笛卡尔积--------------//
+
+#错误案例：相当于拿beauty表里面的每一条数据去匹配boys表中的每一条数据，count(*)beauty * count(*)boys
+#发生原因：没有有效的链接条件
+select name,boyName from beauty,boys;
+
+#如何避免：加上有效的链接条件
+select NAME,boyName from boys,beauty where beauty.boyfriend_id= boys.id;
+//-------------------------------------------------//
+
+
+
+
+一丶sql192标准
+	1.多表等值连接的结果为多表的交集部分
+	2 n表连接，至少需要n-1个连接条件
+	3.多表的顺序没有要求
+	4.一般需要为表去别名
+	5.可以搭配前面介绍的所有子句使用，比如排序，分组，筛选等
+//--------------------等值连接--------------------//
+
+#案例：查询女神名和对应的男神名
+select NAME,boyName from boys,beauty where beauty.boyfriend_id= boys.id;
+
+
+#案例：查询部门名和对应的员工名
+select department_name,last_name from departments,employees WHERE departments.department_id = employees.department_id;
+
+
+
+
+#案例：查询工种号，员工名，工种名
+错误：（有歧义，因为系统无法识别job_id到底是哪个表的job_id
+SELECT last_name,job_id,job_title FROM employees,jobs WHERE employees.job_id = jobs.job_id;
+修改：
+SELECT last_name,employees.job_id,job_title FROM employees,jobs WHERE employees.job_id = jobs.job_id;
+优化：（为表起别名）
+SELECT last_name,e.job_id,job_title FROM employees as e,jobs WHERE e.job_id = jobs.job_id;
+
+
+
+//-------------------------------------------------//
+
+
+
+
+
+//--------------------等值连接（加筛选）--------------------//
+
+#案例：查询有奖金的员工名和部门名
+select  last_name,department_name,commission_pct from employees as e ,departments as d WHERE d.department_id=e.department_id and e.commission_pct is not NULL;
+
+
+
+#案例二：查询城市名中第二个字符为o的部门名和城市名
+select city,department_name  from locations l,departments d WHERE l.location_id = d.location_id and city LIKE '_o%';
+
+
+//-------------------------------------------------//
+
+
+
+
+
+//--------------------等值连接（加分组）--------------------//
+
+#案例一：查询每个城市的部门个数
+select count(*) ,city from departments d,locations l where l.location_id = d.location_id group by city
+
+
+#案例二:查询有奖金的每个部门的部门名和部门的领导编号和该部门的最低工资
+SELECT MIN(salary),department_name,d.manager_id  from employees e,departments d WHERE e.department_id = d.department_id and e.commission_pct is not null GROUP BY department_name;
+
+//-------------------------------------------------//
+
+
+
+
+//--------------------等值连接（加排序）--------------------//
+
+案例：查询每个部门的部门名和员工的个数，并且按员工个数降序
+select count(*) as num,department_name from departments d,employees e WHERE d.department_id =e.department_id GROUP BY e.department_id ORDER BY num DESC;
+
+//-------------------------------------------------//
+
+
+
+
+//--------------------三表连接--------------------//
+
+案例：查询员工名，部门名和所在的城市
+select last_name,department_name,city from employees e,departments d,locations l where e.department_id = d.department_id and d.location_id = l.location_id;
+
+
+
+//-------------------------------------------------//
+
+
+
+
+
+
+

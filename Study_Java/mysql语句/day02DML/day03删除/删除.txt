@@ -1,0 +1,70 @@
+
+delete from 表名 where 筛选条件
+
+
+
+//---------------------删除--------------------------//
+
+1.单数据的删除
+delete  form 表名  where 筛选条件
+
+
+2.删除表中所有数据
+truncate table 表名
+
+
+
+区别：
+	① delete 可以加where 条件，
+	truncate 不能加
+	
+	②truncate删除 效率高一点点
+	
+	③假如要删除表中有自增长列，如果用delete删除后，在插入数据，自增长的值从断点开始
+	而truncate删除后，在插入数据，自增长列的值从1开始
+
+	④truncate删除没有返回值，delete删除有返回值
+	
+	⑥truncate删除不能回滚，delete删除可以回滚
+
+
+
+#delete
+#案例1.删除手机号以9结尾的女神信息
+delete form beauty where phone like ‘%9’；
+
+
+#删除表中全部数据
+#案例：删除张无忌的女朋友的信息
+（99写法）
+delete b from beauty b from inner join boys bo on b.boyfriend_id = bo.id where bo.boyName="张无忌";
+
+
+(92写法）
+delete 表一别名，（表二别名） from 表一  别名，表二 别名  where 连接条件  and 筛选条件
+
+
+#删除黄晓明的信息以及他女朋友的信息
+delete b,bo from beauty b inner join boys bo on b.boyfriend_id = bo.id where bo.boyName = "黄晓明";
+
+
+
+#删除1条数据
+delete from beauty limit; 
+
+//-----------------------------------------------------//
+
+
+
+
+
+
+
+//---------------------truncate--------------------------//
+
+
+#案例：将魅力值>100的男神信息删除
+truncate table boys（全表删除）
+
+
+//-----------------------------------------------------//

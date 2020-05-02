@@ -1,0 +1,309 @@
+
+
+
+
+#对于同时运行的多个事务，当这些事务访问数据库中相同的数据时，如果没有采取必要的隔离机制
+就会导致各种并发问题
+	
+	脏读：对于两个事务，如果第一个事务读取了已经被第二个事务更新但是还没有被提交的字段
+		   之后，若第二个事务回滚，第一个事务读取的内容就是临时且无效的。
+	
+	不可重复读：对于两个事务，其中事务一读取了一个字段，然后事务二更新了该字段
+			之后，事务一再次读取同一个字段，值就不一样。
+			
+	幻读：对于两个事务，事务一从一个表中读取一个字段，然后事务二在该表中插入了
+			一些新的行之后，如果事务一再次读取同一个表，就会多出几行
+		 
+
+
+
+事务的隔离级别：
+		  脏读		不可重复读	幻读
+read uncommitted：√		√		√
+read committed：  ×		√		√
+repeatable read： ×		×		√
+serializable	  ×             ×               ×
+
+
+mysql中默认 第三个隔离级别 repeatable read
+oracle中默认第二个隔离级别 read committed
+查看隔离级别
+select @@tx_isolation;
+设置隔离级别
+set session|global transaction isolation level 隔离级别;
+
+
+savepoint 节点名;设置保存点
+	set autocommit=0;
+	delete from account where id=25;
+	savepoint a;#设置保存点
+	delete from account where id=28；
+	rollback to a;#回到保存点
+
+		 
+
+//---------------------delete和truncate在事务中的区别-------------//
+ 
+ #演示delete	
+ select autocommit=0;
+ start transaction;
+ delete from account;
+ rollback;	
+ (成功回滚)
+ 
+ 
+ 
+ #演示truncate
+ select autocommit=0;
+ start transaction;
+ truncate from account;
+ rollback;	
+(回滚失败) 	
+	
+		 
+//-------------------------------------------------------------//	
+	
+	
+	
+	
+		 
+
+		 
+//--------------------演示事务隔离级别一(读但未提交)--------------//
+					不可避免脏读，不可避免 不可重复读
+		(事务没提交也能看到修改的数据，万一提交数据回滚，就会产生错误数据)
+
+
+#通过命令行设置---------进入cmd
+
+#查看当前的隔离命令级别
+select  @@tx_isolation; 新版用select  @@transaction_isolation;
+
+
+#设置最低级别
+set session transaction isolation level read uncommitted;
+
+
+#查看当前隔离级别
+select  @@tx_isolation;
+
+
+#查看表
+use  数据库
+select * from account;
+#如果发现数据库中某字段存在中文乱码
+set names gbk;
+select * from account;
+
+
+#开启事务
+set autocommit=0；
+
+
+#修改数据
+update account set username = 'join' where id=25;
+
+
+#提交(每次更改隔离级别时)
+commit;
+
+
+                            开启第二个事务（cmd）
+                            
+#查看当前的隔离命令级别
+select  @@tx_isolation;
+
+
+#设置最低级别
+set session transaction isolation level read uncommitted;
+
+
+#查看当前的隔离命令级别
+select  @@tx_isolation;
+use  数据库
+
+
+#开启事务
+set autocommit=0;
+
+
+set names gbk;
+
+
+#查看表中数据(数据已经改变)
+(脏读，因为事务一中修改了数据但并未提交,万一rollback了，那么刚才读取的数据就是错误的)
+select * from account;
+
+
+#提交(每次更改隔离级别时)
+commit;
+
+//---------------------------------------------------//
+
+
+
+
+
+
+
+
+
+
+//--------------------演示事务隔离级别二(读与提交)----------//
+						避免脏读，但是不可避免 不可重复读
+				(如果在事务一提交前后分别查询表就会产生不同的数据)
+					
+						
+#设置隔离级别二
+set session transaction isolation level read committed;
+
+
+#重新开启事务
+set autocommit=0;
+
+
+#设置数据
+update account set username = 'zhang' where id=26;
+
+
+#提交(每次更改隔离级别时)
+commit;
+
+
+				   开启第二个事务（cmd）
+				   				   
+#设置级别
+set session transaction isolation level read committed;				   
+				   
+		
+#重新开启事务
+set autocommit=0;
+
+
+#查看数据
+事务一没有提交
+select * from account; 和下一次的查询结果不一致
+
+
+#查看数据
+事务一提交
+那么   select * from account;  看到数据的改变
+
+
+#提交(每次更改隔离级别时)
+commit;
+
+
+//---------------------------------------------------//
+
+
+
+
+
+
+									（mysql默认）
+//--------------------演示事务隔离级别三(可重复读)----->专门针对修改update<----------//
+						不可避免幻读(专门针对插入insert)：事务一中查看三条数据
+						，然后事务二中插入并提交一条数据，那么事务一中修改就会显
+						示成修改了4条数据。	
+
+
+
+
+#设置隔离级别三
+set session transaction isolation level repeatable read;（mysql默认）
+
+
+#重新开启事务
+set autocommit=0;
+
+
+修改数据				
+update account set username = 'zhangfei' where id=26;					
+					
+#提交(每次更改隔离级别时)
+commit;					
+		
+		
+					
+					
+					
+					 开启第二个事务（cmd）
+ 
+ 
+#设置隔离级别三
+set session transaction isolation level repeatable read;
+
+
+#重新开启事务
+set autocommit=0;
+
+
+#查看数据（事务一没提交前）
+select * from account where id = 26;(事务一没提交，那么就不会发生脏读)
+
+
+#事务一提交commit后
+select * from account where id = 26;(查到的结果和第一次查到的结果一致,所以不会发生脏读，和不可重复读)
+
+
+#提交事务
+commit
+
+
+#重新开启事务
+set autocommit=0;
+select * from account where id = 26;(再次重新开启事务，这样才能看到修改后的数据)
+ 
+ 
+ #提交(每次更改隔离级别时)
+commit;
+
+//---------------------------------------------------//
+
+
+
+
+
+
+//--------------------演示事务隔离级别四---------------//
+						（避免所有的问题)
+						（性能十分的低下）
+
+
+
+#设置隔离级别四
+set session transaction isolation level serializable;
+
+
+#重新开启事务
+set autocommit=0;
+
+
+#修改四条数据
+update account set username = '12345';
+
+
+
+
+
+
+					 开启第二个事务（cmd）
+ 
+ 
+#设置隔离级别三
+set session transaction isolation level serializable;
+
+
+#重新开启事务
+set autocommit=0;
+
+
+#在事务一没提交前插入数据
+insert into acount value(null,"456",2000);回车后没反应，阻塞住了，等待事务一释放锁资源，如果事务一commit才会执行
+
+
+
+
+//---------------------------------------------------//
+

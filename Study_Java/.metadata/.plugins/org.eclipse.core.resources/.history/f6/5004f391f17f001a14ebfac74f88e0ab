@@ -1,0 +1,109 @@
+
+
+
+
+call proc_drop_index("尚硅谷2","dept")
+call proc_drop_index("尚硅谷2","emp")
+
+
+
+
+1.无过滤不索引
+2.顺序错必排序
+3.方向反比排序
+4.group by 使用索引的原则几乎跟order by一致，唯一区别是group by 即使没有过滤条件用到索引，也可以直接使用索引
+
+
+
+
+
+
+#无过滤不索引
+#案例
+explain select sql_no_cache * from emp order by age,deptld;(all  Using filesort)
+create index idx_age_deptld_name on emp (age,deptld,name)
+#没用上索引
+explain select sql_no_cache * from emp order by age,deptld;(all  Using filesort)
+
+
+
+explain select sql_no_cache * from emp order by age,deptld limit 10;(all  Using filesort)
+create index idx_age_deptld_name on emp (age,deptld,name)
+explain select sql_no_cache * from emp order by age,deptld limit 10;(index)
+
+
+
+#案例
+create index idx_age_deptld_name on emp (age,deptld,name)
+explain select * from emp where age=45 order by deptld;	(ref  idx_age_deptld_name)
+
+
+
+
+#案例
+create index idx_age_deptld_name on emp (age,deptld,name)
+explain select * from emp where age=45 order by deptld, name;(ref  idx_age_deptld_name)
+
+
+
+
+#出现Using filesort,因为有个字段没有包含进去
+#案例
+create index idx_age_deptld_name on emp (age,deptld,name)
+explain select * from emp where age=45 order by deptld, empno;(ref  idx_age_deptld_name  Using filesort)
+
+
+
+#顺序错必排序
+#出现Using filesort,字段顺序不一样
+#案例
+create index idx_age_deptld_name on emp (age,deptld,name)
+explain select * from emp where age=45 order by  name,deptld;(ref  idx_age_deptld_name   Using filesort)
+
+
+
+#没有用上索引
+#案例
+create index idx_age_deptld_name on emp (age,deptld,name)
+explain select * from emp where deptld=45 order by age;(all null  Using filesort)
+
+
+
+
+
+#方向反比排序
+
+#案例
+create index idx_age_deptld_name on emp (age,deptld,name)
+explain select * from emp where age=45 order by deptld desc, name,desc;(ref  idx_age_deptld_name)
+
+
+
+#案例
+create index idx_age_deptld_name on emp (age,deptld,name)
+explain select * from emp where age=45 order by deptld asc, name desc;(ref  idx_age_deptld_name  Using filesort)
+
+
+
+
+
+
+#案例
+explain select sql_no_cache * from emp where age=30 and empno<101000 order by name;(all  null  Using filesort)
+create index idx_age_empno_name on emp (age,empno,name);
+explain select sql_no_cache * from emp where age=30 and empno<101000 order by name;(range  null  Using filesort)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,29 @@
+
+
+
+#平凡使用的字段查询做索引
+例如：
+select * from user where name=''
+#给name字段建立索引
+create index idx_user_name on user(name);
+ 
+
+例如：
+select * from user where name='' and email='';
+create index idx_user_nameEmail on user(name,email);
+
+
+
+例子：全有
+select * from tbl_emp a left join tbl_dept b on a.deptld=b.id
+union
+select * from tbl_emp a right join tb1_dept b on a.deptld=b.id;
+
+
+
+
+例子：双表独有
+select * from tbl_emp a left join tbl_dept b on a.deptld=b.id where b.id is null
+union
+select * from tbl_emp a right join tb1_dept b on a.deptld=b.id where a.id is null;
+

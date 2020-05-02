@@ -1,0 +1,34 @@
+//进阶三：排序查询
+
+
+
+//---------------排序 order by--------------------//
+1.asc代表的是升序，desc代表的是降序
+2.order by 句子中可以支持单个字段，多个字段，表达式，函数，别名
+3.order by 子句一般都是放在查询语句的最后面，但是limit子句除外
+
+
+
+#案例一：查询员工信息，要求工资从高到低排序
+select * from employees order by salary desc;#降序
+select * from employees order by salary asc; #升序
+
+
+#案例二：查询部门编号>=90d的员工信息，要求按入职时间的先后排序
+select * from employees where department_id>=90 order by hiredate asc; 
+
+
+#案例三：按年薪的高低显示员工的信息和年薪[按表达式排序]
+select *,salary*12*(1+ifnull(commission_pct,0)) as 年薪  from employees order by salary*12*(1+ifnull(commission_pct,0)) desc;
+select *,salary*12*(1+ifnull(commission_pct,0)) as 年薪  from employees order by 年薪 desc;
+
+
+#案例5：按姓名的长度显示员工的姓名和工资【按函数排序】
+select length(last_name) 字节长度,last_name,salary from employees order by length(last_name) desc;
+
+
+
+#案例六：查询员工信息，要求先按工资排序，在按编号降序排序【按多个字段排序】
+select  avg(salary), department_id,job_id from employees where department_id is not null group by department_id,job_id order by avg(salary) desc;
+
+//-----------------------------------------------//

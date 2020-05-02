@@ -1,0 +1,148 @@
+
+
+			
+
+
+	
+				索引着重查找和排序：指定建立索引的顺序与order by 后面字段顺序一致才能达到性能最优
+
+
+
+
+
+
+1.order by子句，尽量使用Index方式排序，避免使用filesort方式排序
+
+2.尽可能在索引列上完成排序操作，遵照索引建立最佳左前缀
+
+3.如果不在索引列上，filesort有两种算法：mysql就要启动双路排序和单路排序
+
+4.优化策略
+		order by 时不要用 select *:当query的字段大小总和小于max_length_for_sort_data而且排序字段不是 TEXT|BLOB 类型是，会
+		用改进后的算法一一单路排序，否则用老算法一一多路排序
+		
+		
+		两种算法都有可能超出sort_buffer的容量，超出之后，会创建tmp文件进行合并排序，导致多次I/O，但是用单路排序算法的风险
+		会更大一些，所以提高sort_buffer_size
+		
+		
+		尝试提高sort_buffer_size:不管用哪种算法，提高这个参数都会提高效率，当然，要根据系统的能力去提高，因为这个参数是针对每个进程的
+		
+		
+		尝试提高 max_length_for_sort_data
+		提高这个参数，会增加用改进算法的概率。但是如果设的太高，数据总量超出sort_buffer_size的概率会增大，明显症状是高的磁盘I/O活动和
+		低的处理器使用率
+		
+		
+		如果where使用索引的最左前缀定义为常量，则order by能使用索引
+		where a=const order by b,c
+		where a=const and b=const order by c
+		where a=const order by b,c
+		where a=const and b>const order by b,c
+		
+		
+		不能使用索引进行排序
+				1.排序不一致
+				2.丢失a索引
+				3.丢失b索引
+				4.d不是索引的一部分
+				5.对于排序来说，多个相等条件也是范围查询,a不是常量索引索引无效
+						where a in(...) order by b,c;
+
+
+
+
+
+
+
+-------------------------------------------------------------------
+
+	建立索引：create index idx_A_ageBirth on tblA(age,birth);
+
+	select * from tblA;
+
+
+	案例：
+		
+		explain select * from tblA where age>20 order by age;
+		type:index       possible_key:idx_A_ageBirth     key:idx_A_ageBirth      key_len:9     ref:null   rows:1     extra:using index using where
+
+
+
+		explain select * from tblA where age>20 order by age,birth;
+		type:index       possible_key:idx_A_ageBirth     key:idx_A_ageBirth      key_len:9     ref:null   rows:1     extra:using filesort  using index using where
+
+		
+		(order by 顺序不与索引顺序不一致)
+		explain select * from tblA where age>20 order by birth;
+		type:index       possible_key:idx_A_ageBirth     key:idx_A_ageBirth      key_len:9     ref:null   rows:1     extra:using index using where using filesort
+		
+
+		(order by 顺序不与索引顺序不一致)
+		explain select * from tblA where age>20 order by birth,age;
+		type:index       possible_key:idx_A_ageBirth     key:idx_A_ageBirth      key_len:9     ref:null   rows:1     extra:using index using where  using filesort
+		
+
+
+		(order by 顺序不与索引顺序不一致)
+		explain select * from tblA where order by birth;
+		type:index       possible_key:idx_A_ageBirth     key:idx_A_ageBirth      key_len:9     ref:null   rows:1     extra:using index using where  using filesort
+		
+	
+		(order by 顺序不与索引顺序不一致)
+		explain select * from tblA where birth>'2016-00-08 00:00:00' order by birth;
+		type:index       possible_key:idx_A_ageBirth     key:idx_A_ageBirth      key_len:9     ref:null   rows:1     extra:using index using where  using filesorts
+		
+
+
+		explain select * from tblA where birth>'2016-00-08 00:00:00' order by age;
+		type:index       possible_key:idx_A_ageBirth     key:idx_A_ageBirth      key_len:9     ref:null   rows:1     extra:using index using where
+		
+		
+		(要么同升，要么同降)
+		explain select * from tblA where order by age ASC,birth DESC;
+		type:index       possible_key:idx_A_ageBirth     key:idx_A_ageBirth      key_len:9     ref:null   rows:1     extra:using index             using filesort
+		
+
+-----------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+		
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

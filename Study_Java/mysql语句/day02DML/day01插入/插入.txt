@@ -1,0 +1,73 @@
+
+//语法
+
+insert into 表名(列名，....)  value(值2,......),(值3,......),(值4,......),(值5,......)
+
+
+//
+
+
+
+//---------------insert(经典)-----------------//
+
+#1.插入类型的值的类型要与列的类型保持一致或兼容
+insert into beauty(id,name,sex,borndate,phone,photo,boyfriend_id) 
+value(13,'唐艺昕','女','1990-4-23','18988888',null,2);
+
+
+#2.可以为null的列是如何插入值；
+方式一：
+insert into beauty(id,name,sex,borndate,phone,photo,boyfriend_id) 
+value(13,'唐艺昕','女','1990-4-23','18988888',null,2);
+
+方式二：
+insert into beauty(id,name,sex,borndate,phone,photo,boyfriend_id) 
+value(14,'唐艺','女','1990-4-23','18988888',3);
+
+
+
+#3.列的顺序是够能够调换
+inset into beauty(name,sex,id,phone) value('金星','女',16,'110');
+
+
+
+#4.可以省略列名（默认是所有列，而且列的顺和表中顺序是一样的）
+insert into beauty value
+(135,'唐昕','女','1990-4-13','1898888885',null,2);
+
+
+
+#5.支持子查询
+insert into beauty (id,name,phone)
+select 26,'林峰','12589658965';
+
+
+//--------------------------------------//
+
+
+
+
+//--------------------方式二------------------//
+//语法
+
+	insert into 表名
+	set 列名 = 值,列名=值；
+
+//
+#1.
+insert into beauty
+set id=19,name='利用',phone='1586984';
+
+
+//----------------------------------------------//
+
+
+
+
+
+
+
+
+
+
+

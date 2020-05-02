@@ -1,0 +1,159 @@
+#视图
+/*
+含义：虚拟表，和普通表一样使用
+作用：	
+	封装与解耦
+	java程序只需要访问视图，不用修改sql，如果修改业务逻辑，只需要后台人员
+	去修改视图就行了
+
+
+mysql5.1版本出现的新特性，是通过表动态生成的数据
+
+比如：舞蹈班和普通班级的对比
+	创建语法的关键字	是否实际占用物理空间	使用
+
+	视图	create view		只是保存了sql逻辑	增删改查，只是一般不能增删改
+	
+	表	create table		保存了数据		增删改查
+
+
+*/
+
+
+//---------------------------视图的使用---------------------//
+
+#案例：查询姓张的学生名和专业名
+SELECT stuname,majorname
+FROM stuinfo s
+INNER JOIN major m ON s.`majorid`= m.`id`
+WHERE s.`stuname` LIKE '张%';
+
+
+创建视图
+CREATE VIEW v1
+AS
+SELECT name,majorname
+FROM stuinfo s
+INNER JOIN major m ON m.`majorid`= s.`id`;
+
+SELECT * FROM v1 WHERE name LIKE '张%';
+
+
+
+#案例：1.查询姓名中包含a字符的员工名、部门名和工种信息
+create view myv1
+as
+select e.last_name,d.department_name,j.* from 
+employees e join departments d join jobs j on e.department_id=d.department_id 
+and e.job_id=j.job_id;
+
+select * from myv1 where e.last_name like '%a%';
+
+
+
+#案例2.查询各部门的平均工资级别
+
+#①创建视图查看每个部门的平均工资
+CREATE VIEW myv2
+AS
+SELECT AVG(salary) ag,department_id
+FROM employees
+GROUP BY department_id;
+
+#②使用
+SELECT myv2.`ag`,g.grade_level
+FROM myv2
+JOIN job_grades g
+ON myv2.`ag` BETWEEN g.`lowest_sal` AND g.`highest_sal`;
+
+
+
+
+#案例3.查询平均工资最低的部门信息
+
+create view myv3
+as 
+select d.*,AVG(salary) s from employees e join departments d on e.department_id = d.department_id group by e.department_id;
+
+SELECT * from myv3 ORDER BY s LIMIT 1 ;
+
+
+
+#案例4.查询平均工资最低的部门名和工资
+SELECT department_name ,s from myv3 ORDER BY s LIMIT 1 
+//----------------------------------------------------------//
+
+
+
+
+
+
+
+//---------------------------视图的修改---------------------//
+
+
+#方式一：
+create or replace 视图名  as 查询语句
+
+
+
+#方式二
+alter view 视图名 as 查询语句
+
+
+
+
+//----------------------------------------------------------//
+
+
+
+
+
+
+
+//---------------------------删除和查看视图---------------------//
+
+#删除视图
+drop view 视图名
+
+
+#c查看视图
+desc myv3
+
+show create view myv3;
+
+
+//----------------------------------------------------------//
+
+
+
+
+
+//---------------------习题-----------------------------//
+
+#创建视图emp_v1，要求查询电话以‘011’开头的员工姓名和工资，邮箱
+create view emp_v1 
+as 
+select last_name,salary,email from employees where phone_number like '011%'
+
+select  * from emp_v1 
+
+
+
+
+#创建视图emp_v2,,要求查询部门的最高工资高于12000的部门信息
+create or replace view emp_v2
+as
+select max(e.salary) m,d.* from employees e join departments d on e.department_id = d.department_id
+group by e.department_id
+select * from emp_v2 where m>12000;
+
+select max(e.salary) m,d.* from employees e join departments d on e.department_id = d.department_id
+group by e.department_id HAVING m >12000;
+
+//----------------------------------------------------------//
+
+
+
+
+

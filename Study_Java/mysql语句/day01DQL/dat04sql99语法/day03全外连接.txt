@@ -1,0 +1,11 @@
+
+
+//------------全外连接------------//
+
+select b.*,bo.* 
+from beauty b
+full outer join boys bo
+on b.boyfriend_id = bo.id;
+
+
+//---------------------------------//

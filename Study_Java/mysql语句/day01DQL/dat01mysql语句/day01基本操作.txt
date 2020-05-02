@@ -1,0 +1,99 @@
+  
+  MySql5.6软件（机房已经装好了，自己的电脑按下面的方法来启动）：
+   1）首先启动MySQL服务器:找到bin目录，在地址栏输入cmd,
+      然后输入命令：start mysqld -u root
+   2)以root用户和password密码连接服务器
+      输入命令：mysql -uroot -ppassword
+   3）打开目录下的my.ini文件，将default-character-set=gbk修改为
+      default-character-set=utf8,然后保存my.ini文件 
+
+
+登陆sql： mysql -h 主机名 -P 端口名 -u 用户名 -p 密码
+	
+
+
+
+
+//查看所有的数据库
+show databases;
+
+
+
+//打开指定的库
+use stuinfo;
+
+
+
+//查看当前所在库
+   select database();
+   
+  
+//查看版本
+select version();
+   
+ 
+//查看库的所有表 
+show tables;
+ 
+ 
+ //查看表中的所有字段以及约束
+ desc departments;
+ 
+ 
+ 
+//查看其他库的所有表
+show tables from 库名;
+ 
+
+//创建表
+create table stuinfo(
+id int,
+name varchar(20));
+  
+   
+//增加数据
+insert into stuinfo(id,name) values(1,"join");   
+insert into stuinfo values(2,"张三");
+   
+ 
+//修改表名
+alter table stuinfo rename stuinfi;
+
+
+//查看表结构
+desc 表名;
+
+
+//修改字段dept 为 department
+alter table new_stu change dept department VARCHAR(10);
+   
+   
+//删除字段sex
+ALTER TABLE new_stu DROP sex;
+   
+   
+// 在字段id后面添加字段address 
+ALTER TABLE new_stu ADD address VARCHAR(20) AFTER id; 
+      
+  
+//对id为1的记录，将其address设置为广东天河
+UPDATE new_stu SET address = '广东天河' WHERE id = 1; 
+     
+ 
+//删除表中id=2 的这行记录
+DELETE FROM new_stu WHERE id = 2;  
+   
+   
+ 
+//把字段id调整到字段na的后面
+ALTER TABLE new_stu MODIFY id VARCHAR(10) AFTER na;  
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
